@@ -1,16 +1,22 @@
 const tg = window.Telegram.WebApp;
-
 tg.expand();
 
-let user = tg.initDataUnsafe.user;
+// Укажите дату знакомства
+// ГОД, МЕСЯЦ (0-11), ДЕНЬ
+const startDate = new Date(2024, 0, 1);
 
-if(user){
-    document.getElementById("user").innerHTML =
-    "Привет, " + user.first_name;
+function updateDays(){
+
+    const now = new Date();
+
+    const diff = now - startDate;
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    document.getElementById("days").textContent = days;
 }
 
-document.getElementById("btn").onclick = function(){
+updateDays();
 
-    tg.showAlert("Кнопка работает!");
-
-}
+// Обновляем раз в минуту
+setInterval(updateDays, 60000);
