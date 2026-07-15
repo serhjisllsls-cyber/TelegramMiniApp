@@ -6,62 +6,77 @@
     <title>Смотрим вместе</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #111827; color: white; }
-        #player { width: 100%; max-height: 70vh; background: #000; }
+        body { background: #0f172a; color: white; }
+        input { background: #1e2937; }
     </style>
 </head>
-<body class="p-4 max-w-5xl mx-auto">
-    <!-- Login Screen -->
-    <div id="loginScreen">
-        <h1 class="text-4xl font-bold text-center my-12">Смотрим вместе 🎬</h1>
-        <button id="loginBtn" 
-                class="block w-full max-w-xs mx-auto bg-blue-600 hover:bg-blue-700 px-10 py-5 rounded-2xl text-xl font-medium">
-            Войти через Google
-        </button>
-    </div>
+<body class="min-h-screen p-4">
+    <div class="max-w-md mx-auto">
 
-    <!-- Main App -->
-    <div id="mainApp" class="hidden">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold">Смотрим вместе</h1>
-            <div>
-                <span id="userInfo" class="text-sm mr-4"></span>
-                <button id="logoutBtn" class="text-red-500 hover:text-red-400">Выйти</button>
+        <!-- Экран регистрации -->
+        <div id="registerScreen">
+            <div class="text-center py-12">
+                <h1 class="text-4xl font-bold mb-2">Смотрим вместе</h1>
+                <p class="text-gray-400">С друзьями</p>
+            </div>
+
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm mb-2">Никнейм</label>
+                    <input id="nickname" type="text" placeholder="Как тебя зовут?" 
+                           class="w-full p-4 rounded-2xl text-lg">
+                </div>
+
+                <div>
+                    <label class="block text-sm mb-2">Номер телефона</label>
+                    <input id="phone" type="tel" placeholder="+7 999 123 45 67" 
+                           class="w-full p-4 rounded-2xl text-lg">
+                </div>
+
+                <button id="sendCodeBtn"
+                        class="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl text-xl font-medium">
+                    Получить код
+                </button>
             </div>
         </div>
 
-        <video id="player" controls class="w-full rounded-3xl mb-6 shadow-2xl"></video>
-
-        <div class="bg-gray-800 rounded-3xl p-6 mb-6">
-            <input id="roomInput" 
-                   placeholder="Введите ID комнаты" 
-                   class="w-full p-4 bg-gray-700 rounded-2xl text-lg mb-4">
-            <button id="joinRoomBtn" 
-                    class="w-full bg-green-600 hover:bg-green-700 py-4 rounded-2xl text-lg font-medium">
-                Присоединиться к комнате
+        <!-- Экран ввода кода -->
+        <div id="codeScreen" class="hidden">
+            <div class="text-center py-12">
+                <h2 class="text-2xl font-bold">Введи код из SMS</h2>
+            </div>
+            <input id="verificationCode" type="text" maxlength="6" placeholder="123456"
+                   class="w-full p-6 text-4xl text-center tracking-widest rounded-3xl bg-gray-800">
+            <button id="verifyCodeBtn"
+                    class="w-full mt-6 bg-green-600 hover:bg-green-700 py-5 rounded-2xl text-xl">
+                Подтвердить
             </button>
         </div>
 
-        <div id="fileSelector" class="hidden bg-gray-800 rounded-3xl p-6 mb-6">
-            <button id="pickFileBtn" 
-                    class="w-full bg-indigo-600 hover:bg-indigo-700 py-4 rounded-2xl text-lg">
-                Выбрать видео из Google Drive
-            </button>
-            <div id="selectedFile" class="mt-4 text-center text-sm text-gray-400"></div>
-        </div>
+        <!-- Главный экран после входа -->
+        <div id="mainScreen" class="hidden">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <p class="text-gray-400 text-sm">Привет,</p>
+                    <h1 id="greeting" class="text-3xl font-bold"></h1>
+                </div>
+                <div id="userNick" class="text-right">
+                    <!-- Никнейм здесь -->
+                </div>
+            </div>
 
-        <!-- Chat -->
-        <div class="bg-gray-800 rounded-3xl p-6">
-            <h3 class="font-bold mb-4">💬 Чат</h3>
-            <div id="chatMessages" class="h-80 overflow-y-auto mb-4 space-y-3 bg-gray-900 p-4 rounded-2xl"></div>
-            <div class="flex gap-2">
-                <input id="chatInput" 
-                       placeholder="Напишите сообщение..." 
-                       class="flex-1 p-4 bg-gray-700 rounded-2xl focus:outline-none">
-                <button id="sendChatBtn" 
-                        class="bg-blue-600 hover:bg-blue-700 px-8 rounded-2xl font-medium">
-                    Отправить
+            <div class="bg-gray-800 rounded-3xl p-6 mb-6">
+                <input id="roomInput" placeholder="ID комнаты" 
+                       class="w-full p-4 rounded-2xl bg-gray-700 text-lg mb-4">
+                <button id="joinRoomBtn" 
+                        class="w-full bg-green-600 py-5 rounded-2xl text-xl font-medium">
+                    Присоединиться
                 </button>
+            </div>
+
+            <!-- Здесь будет плеер и чат позже -->
+            <div class="text-center text-gray-500 py-12">
+                Выбери комнату и смотри синхронно с друзьями
             </div>
         </div>
     </div>
