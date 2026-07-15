@@ -6,54 +6,46 @@
     <title>Смотрим вместе</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #0f172a; }
+        body { background: #0f172a; color: white; }
     </style>
 </head>
 <body class="min-h-screen p-4">
     <div class="max-w-md mx-auto">
 
-        <!-- Регистрация -->
-        <div id="registerScreen">
-            <div class="text-center py-12">
-                <h1 class="text-4xl font-bold mb-2">Смотрим вместе</h1>
-                <p class="text-gray-400">С друзьями</p>
+        <!-- Экран входа/регистрации -->
+        <div id="authScreen">
+            <div class="text-center py-10">
+                <h1 class="text-4xl font-bold">Смотрим вместе</h1>
             </div>
-            
+
             <div class="space-y-6">
-                <div>
-                    <label class="block text-sm mb-2">Твой никнейм</label>
-                    <input id="nickname" type="text" placeholder="Например: Котик228" 
-                           class="w-full p-5 rounded-3xl bg-gray-800 text-xl">
+                <input id="nickname" type="text" placeholder="Никнейм" 
+                       class="w-full p-5 rounded-3xl bg-gray-800 text-lg">
+
+                <input id="password" type="password" placeholder="Пароль" 
+                       class="w-full p-5 rounded-3xl bg-gray-800 text-lg">
+
+                <div class="flex gap-4">
+                    <button id="loginBtn" 
+                            class="flex-1 bg-blue-600 py-5 rounded-3xl text-lg">Войти</button>
+                    <button id="registerBtn" 
+                            class="flex-1 bg-green-600 py-5 rounded-3xl text-lg">Регистрация</button>
                 </div>
-                
-                <button id="startBtn" 
-                        class="w-full bg-blue-600 hover:bg-blue-700 py-6 rounded-3xl text-2xl font-medium">
-                    Начать
-                </button>
             </div>
         </div>
 
         <!-- Главный экран -->
         <div id="mainScreen" class="hidden">
-            <div class="flex justify-between items-center mb-8">
-                <div>
-                    <p class="text-gray-400">Привет,</p>
-                    <h1 id="greeting" class="text-3xl font-bold"></h1>
-                </div>
+            <div class="flex justify-end mb-8">
                 <div id="userNick" class="text-right"></div>
             </div>
 
-            <div class="bg-gray-800 rounded-3xl p-6">
-                <input id="roomInput" placeholder="ID комнаты" 
-                       class="w-full p-5 rounded-3xl bg-gray-700 text-lg mb-4">
-                <button id="joinRoomBtn" 
-                        class="w-full bg-green-600 py-6 rounded-3xl text-xl font-medium">
-                    Присоединиться к комнате
-                </button>
+            <div class="text-center py-12">
+                <h2 id="greeting" class="text-3xl font-bold"></h2>
             </div>
 
-            <div class="mt-8 text-center text-gray-500">
-                Скоро здесь будет плеер и чат
+            <div class="bg-gray-800 rounded-3xl p-8 text-center text-gray-400">
+                Здесь будет плеер, чат и комнаты
             </div>
         </div>
     </div>
