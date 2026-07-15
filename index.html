@@ -1,34 +1,56 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Смотрим вместе</title>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2/dist/tailwind.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Смотрим вместе</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #111827; color: white; }
+        #player { width: 100%; max-height: 70vh; background: black; }
+    </style>
 </head>
-<body class="bg-gray-900 text-white">
-  <div class="max-w-4xl mx-auto p-4">
-    <button id="loginBtn" class="bg-blue-600 px-6 py-3 rounded">Войти через Google</button>
-    
-    <div id="main" class="hidden">
-      <video id="player" controls class="w-full max-h-[70vh] bg-black"></video>
-      
-      <div class="flex gap-4 mt-4">
-        <input id="roomInput" placeholder="ID комнаты" class="flex-1 p-3 bg-gray-800 rounded">
-        <button id="joinBtn" class="bg-green-600 px-6 py-3 rounded">Присоединиться / Создать</button>
-      </div>
-      
-      <div id="chat" class="h-64 overflow-y-auto bg-gray-800 p-4 mt-4 rounded"></div>
-      <div class="flex mt-2">
-        <input id="chatInput" placeholder="Сообщение..." class="flex-1 p-3 bg-gray-800 rounded-l">
-        <button id="sendBtn" class="bg-blue-600 px-6 rounded-r">Отправить</button>
-      </div>
-    </div>
-  </div>
+<body class="p-4">
+    <div class="max-w-5xl mx-auto">
+        <!-- Login -->
+        <div id="loginScreen">
+            <h1 class="text-4xl font-bold text-center my-12">Смотрим вместе 🎬</h1>
+            <button id="loginBtn" 
+                    class="block mx-auto bg-blue-600 hover:bg-blue-700 px-10 py-5 rounded-2xl text-xl">
+                Войти через Google
+            </button>
+        </div>
 
-  <script src="app.js"></script>
+        <!-- Main -->
+        <div id="mainApp" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold">Смотрим вместе</h1>
+                <button id="logoutBtn" class="text-red-500">Выйти</button>
+            </div>
+
+            <video id="player" controls class="w-full rounded-3xl mb-6"></video>
+
+            <div class="bg-gray-800 p-6 rounded-3xl mb-6">
+                <input id="roomInput" placeholder="ID комнаты" class="w-full p-4 bg-gray-700 rounded-2xl mb-4">
+                <button id="joinRoomBtn" class="w-full bg-green-600 py-4 rounded-2xl text-lg">Присоединиться</button>
+            </div>
+
+            <div id="fileSelector" class="hidden bg-gray-800 p-6 rounded-3xl mb-6">
+                <button id="pickFileBtn" class="w-full bg-indigo-600 py-4 rounded-2xl">Выбрать видео из Drive</button>
+                <div id="selectedFile" class="mt-3 text-center"></div>
+            </div>
+
+            <div class="bg-gray-800 p-6 rounded-3xl">
+                <h3 class="mb-4 font-bold">💬 Чат</h3>
+                <div id="chatMessages" class="h-72 overflow-y-auto mb-4"></div>
+                <div class="flex gap-2">
+                    <input id="chatInput" placeholder="Напиши сообщение..." class="flex-1 p-4 bg-gray-700 rounded-2xl">
+                    <button id="sendChatBtn" class="bg-blue-600 px-8 rounded-2xl">Отправить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
 </body>
 </html>
