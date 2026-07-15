@@ -1,90 +1,34 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#160d15">
-    <title>Мы вместе ❤️</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="style.css">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Смотрим вместе</title>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2/dist/tailwind.min.css" rel="stylesheet">
 </head>
+<body class="bg-gray-900 text-white">
+  <div class="max-w-4xl mx-auto p-4">
+    <button id="loginBtn" class="bg-blue-600 px-6 py-3 rounded">Войти через Google</button>
+    
+    <div id="main" class="hidden">
+      <video id="player" controls class="w-full max-h-[70vh] bg-black"></video>
+      
+      <div class="flex gap-4 mt-4">
+        <input id="roomInput" placeholder="ID комнаты" class="flex-1 p-3 bg-gray-800 rounded">
+        <button id="joinBtn" class="bg-green-600 px-6 py-3 rounded">Присоединиться / Создать</button>
+      </div>
+      
+      <div id="chat" class="h-64 overflow-y-auto bg-gray-800 p-4 mt-4 rounded"></div>
+      <div class="flex mt-2">
+        <input id="chatInput" placeholder="Сообщение..." class="flex-1 p-3 bg-gray-800 rounded-l">
+        <button id="sendBtn" class="bg-blue-600 px-6 rounded-r">Отправить</button>
+      </div>
+    </div>
+  </div>
 
-<body>
-    <div class="photo-backdrop" aria-hidden="true"></div>
-    <div class="ambient ambient--one" aria-hidden="true"></div>
-    <div class="ambient ambient--two" aria-hidden="true"></div>
-
-    <button class="menu-button" id="menuButton" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="sidebar">
-        <img src="images/menu.jpg" alt="">
-        <span class="menu-button__icon" aria-hidden="true"><i></i><i></i></span>
-    </button>
-
-    <div id="overlay" aria-hidden="true"></div>
-
-    <aside class="sidebar" id="sidebar" aria-hidden="true">
-        <div class="sidebar__top">
-            <div class="profile">
-                <img src="images/menu.jpg" class="avatar" alt="Наша фотография">
-                <div>
-                    <span class="profile-kicker">НАША ИСТОРИЯ</span>
-                    <div class="profile-name">Мы вместе</div>
-                </div>
-            </div>
-            <button class="close-button" id="closeMenuButton" type="button" aria-label="Закрыть меню">×</button>
-        </div>
-
-        <nav class="menu" aria-label="Навигация">
-            <button class="menu-item menu-item--active" type="button">
-                <span class="menu-item__icon">♥</span>
-                <span>Главная</span>
-            </button>
-            <button class="menu-item" type="button">
-                <span class="menu-item__icon">⌁</span>
-                <span>Дата знакомства</span>
-            </button>
-            <button class="menu-item" type="button">
-                <span class="menu-item__icon">◌</span>
-                <span>Наши фотографии</span>
-            </button>
-            <button class="menu-item" type="button">
-                <span class="menu-item__icon">✦</span>
-                <span>Годовщины</span>
-            </button>
-        </nav>
-
-        <p class="sidebar-note">Каждый день с тобой — мой любимый.</p>
-    </aside>
-
-    <main class="container">
-        <section class="love-card" aria-labelledby="pageTitle">
-            <div class="card-shine" aria-hidden="true"></div>
-
-            <header class="card-header">
-                <span class="eyebrow"><span class="eyebrow__heart">♥</span> НАШЕ ВРЕМЯ ВМЕСТЕ</span>
-                <h1 id="pageTitle">Мы вместе</h1>
-            </header>
-
-            <div class="counter" aria-live="polite">
-                <div id="days" class="days">0</div>
-                <div class="counter-caption">счастливых дней рядом</div>
-            </div>
-
-            <div class="card-divider"><span>✦</span></div>
-
-            <footer class="card-footer">
-                <span>Наша история началась</span>
-                <time id="sinceDate" datetime="2025-07-15">15 июля 2025</time>
-            </footer>
-        </section>
-
-        <p class="love-note">И пусть это будет только началом <span>♥</span></p>
-    </main>
-
-    <script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
