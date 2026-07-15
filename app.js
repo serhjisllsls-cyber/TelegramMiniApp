@@ -1,156 +1,60 @@
-// ===================================
-// Telegram Mini App
-// ===================================
+const tg = window.Telegram?.WebApp;
+tg?.ready();
+tg?.expand();
 
-const tg = window.Telegram.WebApp;
-
-tg.ready();
-tg.expand();
-
-
-// ===================================
-// ДАТА ЗНАКОМСТВА
-// ===================================
-//
-// Формат:
-// ГОД, МЕСЯЦ (0-11), ДЕНЬ
-//
-// Пример:
-// 15 июля 2025 года
-//
-// new Date(2025, 6, 15)
-//
-
-const startDate = new Date(
-    2025,
-    6,
-    15
-);
-
-
-// ===================================
-// ЭЛЕМЕНТЫ
-// ===================================
-
+// Год, месяц (0–11), день.
+const startDate = new Date(2025, 6, 15);
 const daysElement = document.getElementById("days");
-
+const sinceDateElement = document.getElementById("sinceDate");
 const menuButton = document.getElementById("menuButton");
-
+const closeMenuButton = document.getElementById("closeMenuButton");
 const sidebar = document.getElementById("sidebar");
-
 const overlay = document.getElementById("overlay");
 
-
-// ===================================
-// ПОДСЧЕТ ДНЕЙ
-// ===================================
-
-function updateDays(){
-
-    const now = new Date();
-
-    const diff = now - startDate;
-
-    const days = Math.floor(diff / 86400000);
-
-    daysElement.style.transform = "scale(1.04)";
-
+function updateDays() {
+    const days = Math.max(0, Math.floor((Date.now() - startDate) / 86400000));
     daysElement.textContent = days;
-
-    setTimeout(() => {
-
-        daysElement.style.transform = "scale(1)";
-
-    },150);
-
+    daysElement.animate(
+        [{ transform: "scale(.96)", opacity: .7 }, { transform: "scale(1)", opacity: 1 }],
+        { duration: 350, easing: "cubic-bezier(.2,.8,.2,1)" }
+    );
 }
 
+function setMenu(open) {
+    sidebar.classList.toggle("open", open);
+    overlay.classList.toggle("show", open);
+    sidebar.setAttribute("aria-hidden", String(!open));
+    overlay.setAttribute("aria-hidden", String(!open));
+    menuButton.setAttribute("aria-expanded", String(open));
+    menuButton.setAttribute("aria-label", open ? "Закрыть меню" : "Открыть меню");
+}
+
+function haptic(style = "light") {
+    tg?.HapticFeedback?.impactOccurred(style);
+}
+
+sinceDateElement.textContent = new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric", month: "long", year: "numeric"
+}).format(startDate);
+sinceDateElement.dateTime = startDate.toISOString().slice(0, 10);
+
 updateDays();
+setInterval(updateDays, 60000);
 
-setInterval(updateDays,60000);
-
-
-// ===================================
-// ОТКРЫТЬ МЕНЮ
-// ===================================
-
-menuButton.addEventListener("click",()=>{
-
-    sidebar.classList.add("open");
-
-    overlay.classList.add("show");
-
+menuButton.addEventListener("click", () => {
+    const open = !sidebar.classList.contains("open");
+    setMenu(open);
+    haptic("medium");
+});
+closeMenuButton.addEventListener("click", () => { setMenu(false); haptic(); });
+overlay.addEventListener("click", () => setMenu(false));
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setMenu(false);
+});
+document.querySelectorAll(".menu-item").forEach((item) => {
+    item.addEventListener("click", () => { setMenu(false); haptic(); });
 });
 
-
-// ===================================
-// ЗАКРЫТЬ МЕНЮ
-// ===================================
-
-overlay.addEventListener("click",()=>{
-
-    sidebar.classList.remove("open");
-
-    overlay.classList.remove("show");
-
-});
-
-
-// ===================================
-// ESC
-// ===================================
-
-document.addEventListener("keydown",(e)=>{
-
-    if(e.key==="Escape"){
-
-        sidebar.classList.remove("open");
-
-        overlay.classList.remove("show");
-
-    }
-
-});
-
-
-// ===================================
-// БЛОКИ МЕНЮ
-// ===================================
-
-document.querySelectorAll(".menu-item").forEach(item=>{
-
-    item.addEventListener("click",()=>{
-
-        sidebar.classList.remove("open");
-
-        overlay.classList.remove("show");
-
-        tg.HapticFeedback.impactOccurred("light");
-
-    });
-
-});
-
-
-// ===================================
-// HAPTIC
-// ===================================
-
-menuButton.addEventListener("click",()=>{
-
-    tg.HapticFeedback.impactOccurred("medium");
-
-});
-
-
-// ===================================
-// ТЕМА TELEGRAM
-// ===================================
-
-document.body.style.background =
-    tg.themeParams.bg_color || "#000";
-
-
-// ===================================
-// КОНЕЦ
-// ===================================
+if (tg?.themeParams?.bg_color) {
+    document.documentElement.style.setProperty("--page-bg", tg.themeParams.bg_color);
+}
