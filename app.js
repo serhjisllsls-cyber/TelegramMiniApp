@@ -1,4 +1,3 @@
-// ==================== FULL APP.JS ====================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import { 
     getAuth, 
@@ -31,7 +30,6 @@ const firebaseConfig = {
   measurementId: "G-RXJFNZ6Y26"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -43,7 +41,7 @@ let currentRoom = null;
 let currentUser = null;
 let player = null;
 
-// DOM Elements
+// DOM элементы
 const loginScreen = document.getElementById('loginScreen');
 const mainApp = document.getElementById('mainApp');
 const playerEl = document.getElementById('player');
@@ -56,7 +54,7 @@ const userInfo = document.getElementById('userInfo');
 const pickFileBtn = document.getElementById('pickFileBtn');
 const selectedFileEl = document.getElementById('selectedFile');
 
-// Login
+// Вход через Google
 document.getElementById('loginBtn').addEventListener('click', () => {
     console.log("🔑 Попытка входа через Google...");
     signInWithPopup(auth, provider)
@@ -65,28 +63,29 @@ document.getElementById('loginBtn').addEventListener('click', () => {
             currentUser = result.user;
             loginScreen.classList.add('hidden');
             mainApp.classList.remove('hidden');
-            userInfo.textContent = currentUser.displayName;
+            
+            // Исправление ошибки textContent
+            if (userInfo) userInfo.textContent = currentUser.displayName || currentUser.email || "Пользователь";
         })
         .catch((error) => {
             console.error("❌ Ошибка входа:", error.code, error.message);
-            alert("Ошибка входа: " + error.message + "\n\nУбедись, что Google Auth включён в Firebase Console!");
+            alert("Ошибка входа: " + (error.message || error.code));
         });
 });
 
-// Logout
+// Выход
 document.getElementById('logoutBtn').addEventListener('click', () => {
     signOut(auth).then(() => location.reload());
 });
 
-// Join Room
+// Присоединиться к комнате
 joinRoomBtn.addEventListener('click', () => {
-    currentRoom = roomInput.value.trim() || 'room-' + Math.random().toString(36).substr(2, 9);
+    currentRoom = roomInput.value.trim() || 'room-' + Date.now().toString(36).slice(0,8);
     document.getElementById('fileSelector').classList.remove('hidden');
     loadRoom();
-    console.log("Комната:", currentRoom);
 });
 
-// Player Sync
+// Настройка плеера и синхронизации
 function setupPlayerSync() {
     player = playerEl;
     const roomRef = doc(db, 'rooms', currentRoom);
@@ -101,29 +100,29 @@ function setupPlayerSync() {
         }
 
         if (data.playing !== undefined) {
-            data.playing ? player.play() : player.pause();
+            if (data.playing) player.play();
+            else player.pause();
             if (data.currentTime) player.currentTime = data.currentTime;
         }
     });
 
-    // Send actions
-    player.addEventListener('play', () => updateDoc(roomRef, { playing: true, currentTime: player.currentTime }));
-    player.addEventListener('pause', () => updateDoc(roomRef, { playing: false, currentTime: player.currentTime }));
-    player.addEventListener('seeked', () => updateDoc(roomRef, { currentTime: player.currentTime }));
+    player.addEventListener('play', () => updateDoc(roomRef, { playing: true, currentTime: player.currentTime }).catch(()=>{}));
+    player.addEventListener('pause', () => updateDoc(roomRef, { playing: false, currentTime: player.currentTime }).catch(()=>{}));
+    player.addEventListener('seeked', () => updateDoc(roomRef, { currentTime: player.currentTime }).catch(()=>{}));
 }
 
-// Chat
+// Чат
 function setupChat() {
     const messagesRef = collection(db, 'rooms', currentRoom, 'messages');
     const q = query(messagesRef, orderBy('timestamp'));
 
     onSnapshot(q, (snapshot) => {
         chatMessages.innerHTML = '';
-        snapshot.forEach(doc => {
-            const m = doc.data();
+        snapshot.forEach((docSnap) => {
+            const m = docSnap.data();
             const div = document.createElement('div');
-            div.className = "flex gap-2";
-            div.innerHTML = `<span class="text-blue-400">${m.user}:</span> ${m.text}`;
+            div.className = "flex gap-2 text-sm";
+            div.innerHTML = `<span class="text-blue-400 font-medium">${m.user}:</span> ${m.text}`;
             chatMessages.appendChild(div);
         });
         chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -133,7 +132,7 @@ function setupChat() {
         const text = chatInput.value.trim();
         if (text && currentUser) {
             addDoc(messagesRef, {
-                user: currentUser.displayName,
+                user: currentUser.displayName || "Пользователь",
                 text: text,
                 timestamp: serverTimestamp()
             });
@@ -141,8 +140,8 @@ function setupChat() {
         }
     });
 
-    chatInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") sendChatBtn.click();
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendChatBtn.click();
     });
 }
 
@@ -151,13 +150,13 @@ function loadRoom() {
     setupChat();
 }
 
-// Auto login check
+// Проверка авторизации
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
         loginScreen.classList.add('hidden');
         mainApp.classList.remove('hidden');
-        userInfo.textContent = user.displayName;
+        if (userInfo) userInfo.textContent = user.displayName || user.email;
     }
 });
 
