@@ -4,7 +4,6 @@ import {
     RecaptchaVerifier, 
     signInWithPhoneNumber 
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDUxyJ1SP5BojDMBkRBgKXFtkE8zSxHcJY",
@@ -16,51 +15,53 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+// Важно! Устанавливаем язык (для Украины)
+auth.languageCode = 'uk';   // или 'ru'
+
 let confirmationResult = null;
 let currentUserNickname = "";
 
-// Экраны
-const registerScreen = document.getElementById('registerScreen');
-const codeScreen = document.getElementById('codeScreen');
-const mainScreen = document.getElementById('mainScreen');
-
-// Отправка кода
+// === Регистрация ===
 document.getElementById('sendCodeBtn').addEventListener('click', () => {
     const nickname = document.getElementById('nickname').value.trim();
-    const phone = document.getElementById('phone').value.trim();
+    let phone = document.getElementById('phone').value.trim();
 
     if (!nickname || !phone) {
-        alert("Введи никнейм и номер телефона");
+        alert("Заполни никнейм и номер телефона");
         return;
     }
 
+    // Добавляем +380 если не ввели
+    if (!phone.startsWith('+')) phone = '+' + phone;
+
     currentUserNickname = nickname;
 
-    // Здесь можно добавить reCAPTCHA (обязательно для Phone Auth)
+    // reCAPTCHA
     window.recaptchaVerifier = new RecaptchaVerifier(auth, 'sendCodeBtn', {
-        'size': 'invisible'
+        'size': 'invisible',
+        'callback': () => {}
     });
 
     signInWithPhoneNumber(auth, phone, window.recaptchaVerifier)
         .then((result) => {
             confirmationResult = result;
-            registerScreen.classList.add('hidden');
-            codeScreen.classList.remove('hidden');
+            document.getElementById('registerScreen').classList.add('hidden');
+            document.getElementById('codeScreen').classList.remove('hidden');
         })
         .catch((error) => {
             console.error(error);
-            alert("Ошибка: " + error.message);
+            alert("Не удалось отправить SMS: " + error.message);
         });
 });
 
 // Подтверждение кода
 document.getElementById('verifyCodeBtn').addEventListener('click', () => {
-    const code = document.getElementById('verificationCode').value.trim();
+    const code = document.getElementById('verificationCode').value;
     
     confirmationResult.confirm(code)
-        .then((result) => {
-            codeScreen.classList.add('hidden');
-            mainScreen.classList.remove('hidden');
+        .then(() => {
+            document.getElementById('codeScreen').classList.add('hidden');
+            document.getElementById('mainScreen').classList.remove('hidden');
             
             document.getElementById('greeting').textContent = `Привет, ${currentUserNickname}!`;
             document.getElementById('userNick').innerHTML = `
@@ -68,7 +69,5 @@ document.getElementById('verifyCodeBtn').addEventListener('click', () => {
                 <div class="font-semibold">${currentUserNickname}</div>
             `;
         })
-        .catch((error) => {
-            alert("Неверный код");
-        });
+        .catch(() => alert("Неверный код"));
 });
