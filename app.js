@@ -1,9 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { 
-    getAuth, 
-    RecaptchaVerifier, 
-    signInWithPhoneNumber 
-} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDUxyJ1SP5BojDMBkRBgKXFtkE8zSxHcJY",
@@ -15,59 +11,32 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Важно! Устанавливаем язык (для Украины)
-auth.languageCode = 'uk';   // или 'ru'
+let currentNickname = "";
 
-let confirmationResult = null;
-let currentUserNickname = "";
-
-// === Регистрация ===
-document.getElementById('sendCodeBtn').addEventListener('click', () => {
+// Старт
+document.getElementById('startBtn').addEventListener('click', () => {
     const nickname = document.getElementById('nickname').value.trim();
-    let phone = document.getElementById('phone').value.trim();
-
-    if (!nickname || !phone) {
-        alert("Заполни никнейм и номер телефона");
+    
+    if (!nickname) {
+        alert("Введи никнейм");
         return;
     }
 
-    // Добавляем +380 если не ввели
-    if (!phone.startsWith('+')) phone = '+' + phone;
+    currentNickname = nickname;
 
-    currentUserNickname = nickname;
-
-    // reCAPTCHA
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'sendCodeBtn', {
-        'size': 'invisible',
-        'callback': () => {}
-    });
-
-    signInWithPhoneNumber(auth, phone, window.recaptchaVerifier)
-        .then((result) => {
-            confirmationResult = result;
+    signInAnonymously(auth)
+        .then(() => {
             document.getElementById('registerScreen').classList.add('hidden');
-            document.getElementById('codeScreen').classList.remove('hidden');
+            document.getElementById('mainScreen').classList.remove('hidden');
+            
+            document.getElementById('greeting').textContent = `Привет, ${nickname}!`;
+            document.getElementById('userNick').innerHTML = `
+                <div class="text-sm text-gray-400">Твой ник</div>
+                <div class="font-bold">${nickname}</div>
+            `;
         })
         .catch((error) => {
             console.error(error);
-            alert("Не удалось отправить SMS: " + error.message);
+            alert("Что-то пошло не так");
         });
-});
-
-// Подтверждение кода
-document.getElementById('verifyCodeBtn').addEventListener('click', () => {
-    const code = document.getElementById('verificationCode').value;
-    
-    confirmationResult.confirm(code)
-        .then(() => {
-            document.getElementById('codeScreen').classList.add('hidden');
-            document.getElementById('mainScreen').classList.remove('hidden');
-            
-            document.getElementById('greeting').textContent = `Привет, ${currentUserNickname}!`;
-            document.getElementById('userNick').innerHTML = `
-                <div class="text-sm text-gray-400">Твой ник</div>
-                <div class="font-semibold">${currentUserNickname}</div>
-            `;
-        })
-        .catch(() => alert("Неверный код"));
 });
