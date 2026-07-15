@@ -17,44 +17,51 @@ const auth = getAuth(app);
 
 let currentNickname = "";
 
-// Регистрация
-document.getElementById('registerBtn').addEventListener('click', () => {
-    const nickname = document.getElementById('nickname').value.trim();
-    const password = document.getElementById('password').value;
+// Ждём загрузки страницы
+document.addEventListener('DOMContentLoaded', () => {
 
-    if (!nickname || password.length < 6) {
-        alert("Никнейм и пароль минимум 6 символов");
-        return;
-    }
+    const loginBtn = document.getElementById('loginBtn');
+    const registerBtn = document.getElementById('registerBtn');
 
-    const email = `${nickname.toLowerCase()}@temp.user`;
+    // Регистрация
+    registerBtn.addEventListener('click', () => {
+        const nickname = document.getElementById('nickname').value.trim();
+        const password = document.getElementById('password').value;
 
-    createUserWithEmailAndPassword(auth, email, password)
-        .then(() => {
-            currentNickname = nickname;
-            showMainScreen();
-        })
-        .catch((error) => alert("Ошибка регистрации: " + error.message));
-});
+        if (!nickname || password.length < 6) {
+            alert("Никнейм обязателен, пароль минимум 6 символов");
+            return;
+        }
 
-// Вход
-document.getElementById('loginBtn').addEventListener('click', () => {
-    const nickname = document.getElementById('nickname').value.trim();
-    const password = document.getElementById('password').value;
+        const email = `${nickname.toLowerCase().replace(/\s+/g, '')}@temp.user`;
 
-    if (!nickname || !password) {
-        alert("Заполни поля");
-        return;
-    }
+        createUserWithEmailAndPassword(auth, email, password)
+            .then(() => {
+                currentNickname = nickname;
+                showMainScreen();
+            })
+            .catch((error) => alert("Ошибка регистрации: " + error.message));
+    });
 
-    const email = `${nickname.toLowerCase()}@temp.user`;
+    // Вход
+    loginBtn.addEventListener('click', () => {
+        const nickname = document.getElementById('nickname').value.trim();
+        const password = document.getElementById('password').value;
 
-    signInWithEmailAndPassword(auth, email, password)
-        .then(() => {
-            currentNickname = nickname;
-            showMainScreen();
-        })
-        .catch((error) => alert("Неверный никнейм или пароль"));
+        if (!nickname || !password) {
+            alert("Заполни никнейм и пароль");
+            return;
+        }
+
+        const email = `${nickname.toLowerCase().replace(/\s+/g, '')}@temp.user`;
+
+        signInWithEmailAndPassword(auth, email, password)
+            .then(() => {
+                currentNickname = nickname;
+                showMainScreen();
+            })
+            .catch((error) => alert("Неверный никнейм или пароль"));
+    });
 });
 
 function showMainScreen() {
@@ -63,7 +70,7 @@ function showMainScreen() {
     
     document.getElementById('greeting').textContent = `Привет, ${currentNickname}!`;
     document.getElementById('userNick').innerHTML = `
-        <div class="text-sm text-gray-400">Никнейм</div>
-        <div class="font-semibold text-lg">${currentNickname}</div>
+        <div class="text-sm text-gray-400">Ник</div>
+        <div class="font-semibold">${currentNickname}</div>
     `;
 }
