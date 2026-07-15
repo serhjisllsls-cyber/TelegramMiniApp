@@ -1,68 +1,164 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Смотрим вместе</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <style>
-        body { background: #111827; color: white; }
-        #player { width: 100%; max-height: 70vh; background: black; }
-        .chat-msg { margin-bottom: 10px; }
-    </style>
-</head>
-<body>
-    <div class="max-w-5xl mx-auto p-4">
-        <!-- Login Screen -->
-        <div id="loginScreen" class="flex flex-col items-center justify-center min-h-screen">
-            <h1 class="text-4xl font-bold mb-8 text-center">Смотрим вместе 🎥</h1>
-            <button id="loginBtn" 
-                    class="bg-blue-600 hover:bg-blue-700 px-10 py-5 rounded-2xl text-xl font-medium">
-                Войти через Google
-            </button>
-        </div>
+// ==================== FULL APP.JS ====================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { 
+    getAuth, 
+    GoogleAuthProvider, 
+    signInWithPopup, 
+    onAuthStateChanged, 
+    signOut 
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
-        <!-- Main App -->
-        <div id="mainApp" class="hidden">
-            <div class="flex justify-between mb-6">
-                <h1 class="text-3xl font-bold">Смотрим вместе</h1>
-                <button id="logoutBtn" class="text-red-500">Выйти</button>
-            </div>
+import { 
+    getFirestore, 
+    doc, 
+    onSnapshot, 
+    updateDoc, 
+    collection, 
+    addDoc, 
+    orderBy, 
+    query, 
+    serverTimestamp 
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-            <div class="bg-black rounded-3xl overflow-hidden mb-6">
-                <video id="player" controls></video>
-            </div>
+const firebaseConfig = {
+  apiKey: "AIzaSyDUxyJ1SP5BojDMBkRBgKXFtkE8zSxHcJY",
+  authDomain: "together-313cc.firebaseapp.com",
+  databaseURL: "https://together-313cc-default-rtdb.firebaseio.com",
+  projectId: "together-313cc",
+  storageBucket: "together-313cc.firebasestorage.app",
+  messagingSenderId: "547247117130",
+  appId: "1:547247117130:web:acb59e4e760a71bf4167b3",
+  measurementId: "G-RXJFNZ6Y26"
+};
 
-            <div class="bg-gray-800 rounded-3xl p-6 mb-6">
-                <input id="roomInput" placeholder="ID комнаты" 
-                       class="w-full bg-gray-700 p-4 rounded-2xl mb-4 text-lg">
-                <button id="joinRoomBtn" 
-                        class="w-full bg-green-600 py-4 rounded-2xl text-lg font-medium">
-                    Присоединиться к комнате
-                </button>
-            </div>
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-            <div id="fileSelector" class="hidden bg-gray-800 rounded-3xl p-6 mb-6">
-                <button id="pickFileBtn" class="w-full bg-indigo-600 py-4 rounded-2xl">
-                    Выбрать видео из Google Drive
-                </button>
-                <div id="selectedFile" class="mt-4 text-center text-sm"></div>
-            </div>
+const provider = new GoogleAuthProvider();
+provider.addScope('https://www.googleapis.com/auth/drive.readonly');
 
-            <!-- Chat -->
-            <div class="bg-gray-800 rounded-3xl p-6">
-                <h3 class="font-bold mb-4">💬 Чат</h3>
-                <div id="chatMessages" class="h-80 overflow-y-auto mb-4 space-y-3"></div>
-                <div class="flex">
-                    <input id="chatInput" placeholder="Сообщение..." 
-                           class="flex-1 bg-gray-700 p-4 rounded-l-2xl">
-                    <button id="sendChatBtn" class="bg-blue-600 px-8 rounded-r-2xl">→</button>
-                </div>
-            </div>
-        </div>
-    </div>
+let currentRoom = null;
+let currentUser = null;
+let player = null;
 
-    <!-- Загружаем как module -->
-    <script type="module" src="app.js"></script>
-</body>
-</html>
+// DOM Elements
+const loginScreen = document.getElementById('loginScreen');
+const mainApp = document.getElementById('mainApp');
+const playerEl = document.getElementById('player');
+const roomInput = document.getElementById('roomInput');
+const joinRoomBtn = document.getElementById('joinRoomBtn');
+const chatMessages = document.getElementById('chatMessages');
+const chatInput = document.getElementById('chatInput');
+const sendChatBtn = document.getElementById('sendChatBtn');
+const userInfo = document.getElementById('userInfo');
+const pickFileBtn = document.getElementById('pickFileBtn');
+const selectedFileEl = document.getElementById('selectedFile');
+
+// Login
+document.getElementById('loginBtn').addEventListener('click', () => {
+    console.log("🔑 Попытка входа через Google...");
+    signInWithPopup(auth, provider)
+        .then((result) => {
+            console.log("✅ Успешный вход!", result.user.email);
+            currentUser = result.user;
+            loginScreen.classList.add('hidden');
+            mainApp.classList.remove('hidden');
+            userInfo.textContent = currentUser.displayName;
+        })
+        .catch((error) => {
+            console.error("❌ Ошибка входа:", error.code, error.message);
+            alert("Ошибка входа: " + error.message + "\n\nУбедись, что Google Auth включён в Firebase Console!");
+        });
+});
+
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    signOut(auth).then(() => location.reload());
+});
+
+// Join Room
+joinRoomBtn.addEventListener('click', () => {
+    currentRoom = roomInput.value.trim() || 'room-' + Math.random().toString(36).substr(2, 9);
+    document.getElementById('fileSelector').classList.remove('hidden');
+    loadRoom();
+    console.log("Комната:", currentRoom);
+});
+
+// Player Sync
+function setupPlayerSync() {
+    player = playerEl;
+    const roomRef = doc(db, 'rooms', currentRoom);
+
+    onSnapshot(roomRef, (snapshot) => {
+        const data = snapshot.data();
+        if (!data) return;
+
+        if (data.videoUrl && player.src !== data.videoUrl) {
+            player.src = data.videoUrl;
+            player.load();
+        }
+
+        if (data.playing !== undefined) {
+            data.playing ? player.play() : player.pause();
+            if (data.currentTime) player.currentTime = data.currentTime;
+        }
+    });
+
+    // Send actions
+    player.addEventListener('play', () => updateDoc(roomRef, { playing: true, currentTime: player.currentTime }));
+    player.addEventListener('pause', () => updateDoc(roomRef, { playing: false, currentTime: player.currentTime }));
+    player.addEventListener('seeked', () => updateDoc(roomRef, { currentTime: player.currentTime }));
+}
+
+// Chat
+function setupChat() {
+    const messagesRef = collection(db, 'rooms', currentRoom, 'messages');
+    const q = query(messagesRef, orderBy('timestamp'));
+
+    onSnapshot(q, (snapshot) => {
+        chatMessages.innerHTML = '';
+        snapshot.forEach(doc => {
+            const m = doc.data();
+            const div = document.createElement('div');
+            div.className = "flex gap-2";
+            div.innerHTML = `<span class="text-blue-400">${m.user}:</span> ${m.text}`;
+            chatMessages.appendChild(div);
+        });
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+
+    sendChatBtn.addEventListener('click', () => {
+        const text = chatInput.value.trim();
+        if (text && currentUser) {
+            addDoc(messagesRef, {
+                user: currentUser.displayName,
+                text: text,
+                timestamp: serverTimestamp()
+            });
+            chatInput.value = '';
+        }
+    });
+
+    chatInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") sendChatBtn.click();
+    });
+}
+
+function loadRoom() {
+    setupPlayerSync();
+    setupChat();
+}
+
+// Auto login check
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = user;
+        loginScreen.classList.add('hidden');
+        mainApp.classList.remove('hidden');
+        userInfo.textContent = user.displayName;
+    }
+});
+
+console.log("🚀 Приложение загружено");
