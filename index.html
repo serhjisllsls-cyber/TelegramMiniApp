@@ -8,34 +8,93 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Мы вместе</title>
+    <title>Мы вместе ❤️</title>
 
-    <link rel="preconnect"
-          href="https://fonts.googleapis.com">
+    <!-- Шрифт -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
 
     <link rel="preconnect"
           href="https://fonts.gstatic.com"
           crossorigin>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
           rel="stylesheet">
 
-    <link rel="stylesheet"
-          href="style.css">
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
 
+    <!-- Telegram -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 </head>
 
 <body>
 
-    <div class="container">
+    <!-- Кнопка меню -->
+
+    <div class="menu-button" id="menuButton">
+
+        <img src="images/menu.png" alt="Menu">
+
+    </div>
+
+    <!-- Затемнение -->
+
+    <div id="overlay"></div>
+
+    <!-- Боковое меню -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="profile">
+
+            <img src="images/menu.png" class="avatar">
+
+            <div class="profile-name">
+                Меню
+            </div>
+
+        </div>
+
+        <nav>
+
+            <div class="menu-item">
+                ❤️ Главная
+            </div>
+
+            <div class="menu-item">
+                📅 Дата знакомства
+            </div>
+
+            <div class="menu-item">
+                📸 Наши фотографии
+            </div>
+
+            <div class="menu-item">
+                🎁 Годовщины
+            </div>
+
+            <div class="menu-item">
+                ⚙ Настройки
+            </div>
+
+        </nav>
+
+    </aside>
+
+    <!-- Основной экран -->
+
+    <main class="container">
 
         <div id="days" class="days">
             0
         </div>
 
-    </div>
+        <div class="subtitle">
+            дней вместе
+        </div>
+
+    </main>
 
     <script src="app.js"></script>
 
