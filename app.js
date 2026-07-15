@@ -54,29 +54,23 @@ const userInfo = document.getElementById('userInfo');
 const pickFileBtn = document.getElementById('pickFileBtn');
 const selectedFileEl = document.getElementById('selectedFile');
 
-// Вход через Google
+// Вход
 document.getElementById('loginBtn').addEventListener('click', () => {
-    console.log("🔑 Попытка входа через Google...");
     signInWithPopup(auth, provider)
         .then((result) => {
-            console.log("✅ Успешный вход!", result.user.email);
             currentUser = result.user;
             loginScreen.classList.add('hidden');
             mainApp.classList.remove('hidden');
-            
-            // Исправление ошибки textContent
-            if (userInfo) userInfo.textContent = currentUser.displayName || currentUser.email || "Пользователь";
+            if (userInfo) userInfo.textContent = currentUser.displayName || currentUser.email;
         })
         .catch((error) => {
-            console.error("❌ Ошибка входа:", error.code, error.message);
-            alert("Ошибка входа: " + (error.message || error.code));
+            console.error(error);
+            alert("Ошибка входа: " + error.message);
         });
 });
 
 // Выход
-document.getElementById('logoutBtn').addEventListener('click', () => {
-    signOut(auth).then(() => location.reload());
-});
+document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth).then(() => location.reload()));
 
 // Присоединиться к комнате
 joinRoomBtn.addEventListener('click', () => {
@@ -85,7 +79,29 @@ joinRoomBtn.addEventListener('click', () => {
     loadRoom();
 });
 
-// Настройка плеера и синхронизации
+// Выбор видео (исправлено)
+pickFileBtn.addEventListener('click', () => {
+    const url = prompt("Вставьте ссылку на видео с Google Drive:\n(Сделайте файл доступным 'Всем в интернете')");
+    if (!url) return;
+
+    let directUrl = url;
+    const match = url.match(/[-\w]{25,}/);
+    if (match) {
+        directUrl = `https://drive.google.com/uc?id=${match[0]}&export=download`;
+    }
+
+    playerEl.src = directUrl;
+    playerEl.load();
+    selectedFileEl.textContent = "✅ Видео загружено";
+
+    if (currentRoom) {
+        updateDoc(doc(db, 'rooms', currentRoom), { 
+            videoUrl: directUrl 
+        }).catch(() => {});
+    }
+});
+
+// Синхронизация плеера
 function setupPlayerSync() {
     player = playerEl;
     const roomRef = doc(db, 'rooms', currentRoom);
@@ -100,8 +116,7 @@ function setupPlayerSync() {
         }
 
         if (data.playing !== undefined) {
-            if (data.playing) player.play();
-            else player.pause();
+            data.playing ? player.play() : player.pause();
             if (data.currentTime) player.currentTime = data.currentTime;
         }
     });
@@ -118,11 +133,11 @@ function setupChat() {
 
     onSnapshot(q, (snapshot) => {
         chatMessages.innerHTML = '';
-        snapshot.forEach((docSnap) => {
+        snapshot.forEach(docSnap => {
             const m = docSnap.data();
             const div = document.createElement('div');
-            div.className = "flex gap-2 text-sm";
-            div.innerHTML = `<span class="text-blue-400 font-medium">${m.user}:</span> ${m.text}`;
+            div.className = "flex gap-2";
+            div.innerHTML = `<span class="text-blue-400">${m.user}:</span> ${m.text}`;
             chatMessages.appendChild(div);
         });
         chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -130,9 +145,9 @@ function setupChat() {
 
     sendChatBtn.addEventListener('click', () => {
         const text = chatInput.value.trim();
-        if (text && currentUser) {
+        if (text) {
             addDoc(messagesRef, {
-                user: currentUser.displayName || "Пользователь",
+                user: currentUser ? currentUser.displayName : "Гость",
                 text: text,
                 timestamp: serverTimestamp()
             });
@@ -140,7 +155,7 @@ function setupChat() {
         }
     });
 
-    chatInput.addEventListener('keypress', (e) => {
+    chatInput.addEventListener('keypress', e => {
         if (e.key === 'Enter') sendChatBtn.click();
     });
 }
@@ -150,7 +165,6 @@ function loadRoom() {
     setupChat();
 }
 
-// Проверка авторизации
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
