@@ -1,5 +1,8 @@
 let currentUser = null;
 
+// Надёжный дефолтный аватар (base64)
+const DEFAULT_AVATAR = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj48Y2lyY2xlIGN4PSIxMDAiIGN5PSIxMDAiIHI9IjgwIiBmaWxsPSIjMzM0MTU1Ii8+PHRleHQgeD0iMTAwIiB5PSIxMTUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iNjAiIGZpbGw9IiM5Y2EzYWYiPjx0c3Bhbj7wn5E8L3RzcGFuPjwvdGV4dD48L3N2Zz4=";
+
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('registerBtn').addEventListener('click', registerUser);
     document.getElementById('loginBtn').addEventListener('click', loginUser);
@@ -17,13 +20,12 @@ function registerUser() {
 
     if (file) {
         const reader = new FileReader();
-        reader.onload = function(e) {
-            const avatarUrl = e.target.result;
-            saveAndShowUser(nickname, password, avatarUrl);
+        reader.onload = (e) => {
+            saveAndShowUser(nickname, password, e.target.result);
         };
         reader.readAsDataURL(file);
     } else {
-        saveAndShowUser(nickname, password, "https://via.placeholder.com/150");
+        saveAndShowUser(nickname, password, DEFAULT_AVATAR);
     }
 }
 
@@ -37,7 +39,6 @@ function loginUser() {
     }
 
     const savedUser = JSON.parse(localStorage.getItem('user'));
-    
     if (savedUser && savedUser.nickname === nickname && savedUser.password === password) {
         showMainScreen(savedUser);
     } else {
@@ -63,12 +64,12 @@ function showMainScreen(user) {
     `;
 
     const avatarImg = document.getElementById('userAvatar');
-    if (avatarImg && user.avatarUrl) {
-        avatarImg.src = user.avatarUrl;
+    if (avatarImg) {
+        avatarImg.src = user.avatarUrl || DEFAULT_AVATAR;
     }
 }
 
-// Автологин, если пользователь уже есть
+// Автологин
 window.onload = () => {
     const savedUser = JSON.parse(localStorage.getItem('user'));
     if (savedUser) {
