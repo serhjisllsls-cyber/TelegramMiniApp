@@ -1,4 +1,4 @@
-const authData = JSON.parse(localStorage.getItem('user')) || {};
+let currentUser = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('registerBtn').addEventListener('click', registerUser);
@@ -15,17 +15,15 @@ function registerUser() {
         return;
     }
 
-    let avatarUrl = "https://via.placeholder.com/150";
-
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            avatarUrl = e.target.result;
-            saveUser(nickname, password, avatarUrl);
+            const avatarUrl = e.target.result;
+            saveAndShowUser(nickname, password, avatarUrl);
         };
         reader.readAsDataURL(file);
     } else {
-        saveUser(nickname, password, avatarUrl);
+        saveAndShowUser(nickname, password, "https://via.placeholder.com/150");
     }
 }
 
@@ -47,10 +45,10 @@ function loginUser() {
     }
 }
 
-function saveUser(nickname, password, avatarUrl) {
-    const user = { nickname, password, avatarUrl };
-    localStorage.setItem('user', JSON.stringify(user));
-    showMainScreen(user);
+function saveAndShowUser(nickname, password, avatarUrl) {
+    currentUser = { nickname, password, avatarUrl };
+    localStorage.setItem('user', JSON.stringify(currentUser));
+    showMainScreen(currentUser);
 }
 
 function showMainScreen(user) {
@@ -58,9 +56,22 @@ function showMainScreen(user) {
     document.getElementById('mainScreen').classList.remove('hidden');
     
     document.getElementById('greeting').textContent = `Привет, ${user.nickname}!`;
+    
     document.getElementById('userNick').innerHTML = `
         <div class="text-sm text-gray-400">Ник</div>
         <div class="font-bold">${user.nickname}</div>
     `;
-    document.getElementById('userAvatar').src = user.avatarUrl;
+
+    const avatarImg = document.getElementById('userAvatar');
+    if (avatarImg && user.avatarUrl) {
+        avatarImg.src = user.avatarUrl;
+    }
 }
+
+// Автологин, если пользователь уже есть
+window.onload = () => {
+    const savedUser = JSON.parse(localStorage.getItem('user'));
+    if (savedUser) {
+        showMainScreen(savedUser);
+    }
+};
