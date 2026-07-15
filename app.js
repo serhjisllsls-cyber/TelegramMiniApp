@@ -17,20 +17,26 @@ const auth = getAuth(app);
 
 let currentNickname = "";
 
-document.addEventListener('DOMContentLoaded', () => {
+// Главная функция
+function initApp() {
     const loginBtn = document.getElementById('loginBtn');
     const registerBtn = document.getElementById('registerBtn');
 
+    if (!loginBtn || !registerBtn) {
+        console.error("Кнопки не найдены! Проверь HTML");
+        return;
+    }
+
     registerBtn.addEventListener('click', registerUser);
     loginBtn.addEventListener('click', loginUser);
-});
+}
 
 function registerUser() {
     const nickname = document.getElementById('nickname').value.trim();
     const password = document.getElementById('password').value;
 
     if (!nickname || password.length < 6) {
-        alert("Никнейм и пароль от 6 символов");
+        alert("Никнейм обязателен. Пароль минимум 6 символов");
         return;
     }
 
@@ -38,7 +44,7 @@ function registerUser() {
 
     createUserWithEmailAndPassword(auth, email, password)
         .then(() => successLogin(nickname))
-        .catch(err => alert("Ошибка: " + err.message));
+        .catch(err => alert("Ошибка регистрации: " + err.message));
 }
 
 function loginUser() {
@@ -46,7 +52,7 @@ function loginUser() {
     const password = document.getElementById('password').value;
 
     if (!nickname || !password) {
-        alert("Заполни поля");
+        alert("Заполни никнейм и пароль");
         return;
     }
 
@@ -54,7 +60,7 @@ function loginUser() {
 
     signInWithEmailAndPassword(auth, email, password)
         .then(() => successLogin(nickname))
-        .catch(err => alert("Неверный ник или пароль"));
+        .catch(() => alert("Неверный никнейм или пароль"));
 }
 
 function successLogin(nickname) {
@@ -64,7 +70,14 @@ function successLogin(nickname) {
     
     document.getElementById('greeting').textContent = `Привет, ${nickname}!`;
     document.getElementById('userNick').innerHTML = `
-        <div class="text-sm text-gray-400">Никнейм</div>
-        <div class="font-bold text-lg">${nickname}</div>
+        <div class="text-sm text-gray-400">Ник</div>
+        <div class="font-bold">${nickname}</div>
     `;
+}
+
+// Запуск
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
 }
