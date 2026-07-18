@@ -6,45 +6,47 @@
   <title>Firebase Галерея</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <style>
-    .photo-card { transition: all 0.2s ease; }
-    .photo-card:hover { transform: translateY(-3px); }
-  </style>
 </head>
 <body class="bg-zinc-950 text-white">
   <div class="max-w-7xl mx-auto px-6 py-8">
     <div class="flex justify-between items-center mb-8">
       <div>
         <h1 class="text-4xl font-semibold">Firebase Галерея</h1>
-        <p class="text-zinc-400">Фото загружаются автоматически из Firebase</p>
+        <p class="text-zinc-400">Фото берутся из Firebase при каждой загрузке</p>
       </div>
-      <div class="px-4 py-1.5 bg-zinc-900 border border-zinc-700 rounded-2xl text-sm">
-        <span id="photo-count" class="font-semibold text-emerald-400">0</span> фото
+      <div class="flex gap-x-3">
+        <button onclick="restorePhotosFromStorage()" 
+                class="px-5 py-2 bg-amber-600 hover:bg-amber-700 rounded-2xl text-sm flex items-center gap-x-2">
+          <i class="fa-solid fa-sync"></i>
+          <span>Восстановить фото из Storage</span>
+        </button>
+        <div class="px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-2xl text-sm">
+          <span id="photo-count" class="font-semibold text-emerald-400">0</span> фото
+        </div>
       </div>
     </div>
 
-    <!-- Загрузка -->
+    <!-- Загрузка новых фото -->
     <div id="dropzone" class="border-2 border-dashed border-zinc-700 hover:border-indigo-500 bg-zinc-900 rounded-3xl p-10 text-center cursor-pointer mb-8">
       <i class="fa-solid fa-cloud-upload-alt text-5xl text-indigo-400 mb-3"></i>
-      <h3 class="text-xl font-semibold">Перетащите фото или нажмите</h3>
+      <h3 class="text-xl font-semibold">Перетащите фото сюда или нажмите</h3>
       <input type="file" id="file-input" multiple accept="image/*" class="hidden">
     </div>
 
-    <!-- Галерея -->
-    <h2 class="font-semibold text-xl mb-4">Сохранённые фото</h2>
+    <h2 class="font-semibold text-xl mb-4">Сохранённые в Firebase</h2>
     <div id="gallery" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5"></div>
   </div>
 
   <!-- Модалка -->
-  <div id="modal" onclick="if (event.target.id === 'modal') closeModal()" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6">
-    <div onclick="event.stopImmediatePropagation()" class="bg-zinc-900 border border-zinc-700 max-w-4xl w-full rounded-3xl overflow-hidden">
-      <div class="relative">
-        <img id="modal-image" class="max-h-[70vh] w-full object-contain bg-black" alt="">
-        <button onclick="closeModal()" class="absolute top-4 right-4 w-10 h-10 bg-black/70 hover:bg-black rounded-2xl flex items-center justify-center">
+  <div id="modal" onclick="if(event.target.id==='modal') closeModal()" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6">
+    <div onclick="event.stopImmediatePropagation()" class="bg-zinc-900 border border-zinc-700 w-full max-w-4xl rounded-3xl overflow-hidden">
+      <div class="relative bg-black">
+        <img id="modal-image" class="max-h-[70vh] w-full object-contain" alt="">
+        <button onclick="closeModal()" class="absolute top-4 right-4 w-10 h-10 bg-black/70 rounded-2xl flex items-center justify-center">
           <i class="fa-solid fa-times text-xl"></i>
         </button>
       </div>
-      <div class="p-6 flex justify-between items-center">
+      <div class="p-6 flex justify-between items-center border-t border-zinc-700">
         <div>
           <div id="modal-name" class="font-semibold text-xl"></div>
           <div id="modal-date" class="text-sm text-zinc-400"></div>
@@ -61,9 +63,8 @@
     </div>
   </div>
 
-  <div id="toast-container" class="fixed bottom-6 right-6 z-50"></div>
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-2"></div>
 
-  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
@@ -81,77 +82,65 @@
     let db, storage;
 
     function showToast(msg, type = 'success') {
-      const div = document.createElement('div');
-      div.className = `px-5 py-3 mb-2 rounded-2xl text-sm ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`;
-      div.textContent = msg;
-      document.getElementById('toast-container').appendChild(div);
-      setTimeout(() => div.remove(), 2500);
+      const el = document.createElement('div');
+      el.className = `px-5 py-3 rounded-2xl text-sm ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`;
+      el.textContent = msg;
+      document.getElementById('toast-container').appendChild(el);
+      setTimeout(() => el.remove(), 2600);
     }
 
     function renderGallery(photos) {
-      const container = document.getElementById('gallery');
-      container.innerHTML = '';
-
+      const gallery = document.getElementById('gallery');
+      gallery.innerHTML = '';
       document.getElementById('photo-count').textContent = photos.length;
 
       if (photos.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-center py-12 text-zinc-400">Пока нет сохранённых фото в Firebase</div>`;
+        gallery.innerHTML = `<div class="col-span-full py-12 text-center text-zinc-400">Нет фото в Firebase</div>`;
         return;
       }
 
       photos.forEach(photo => {
         const card = document.createElement('div');
-        card.className = `photo-card group relative bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden`;
+        card.className = `group relative bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden`;
 
-        const date = photo.uploadedAt?.toDate?.().toLocaleString('ru-RU', { 
-          day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
-        }) || '';
+        const dateStr = photo.uploadedAt?.toDate?.().toLocaleString('ru-RU', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) || '';
 
         card.innerHTML = `
           <img src="${photo.url}" class="w-full aspect-[4/3] object-cover cursor-pointer">
-          <button class="delete-btn absolute top-3 right-3 px-3 py-1 bg-black/60 hover:bg-red-600 rounded-2xl text-sm opacity-0 group-hover:opacity-100">
+          <button class="delete-btn absolute top-3 right-3 px-3 py-1 bg-black/60 hover:bg-red-600 rounded-2xl text-sm opacity-0 group-hover:opacity-100 transition-all">
             <i class="fa-solid fa-trash"></i>
           </button>
           <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 p-4">
             <div class="font-semibold truncate">${photo.name}</div>
-            <div class="text-xs text-emerald-400">${date}</div>
+            <div class="text-xs text-emerald-400">${dateStr}</div>
           </div>
         `;
 
         card.querySelector('img').onclick = () => openModal(photo);
-        card.querySelector('.delete-btn').onclick = (e) => {
+        card.querySelector('.delete-btn').onclick = e => {
           e.stopImmediatePropagation();
           deletePhoto(photo);
         };
-
-        container.appendChild(card);
+        gallery.appendChild(card);
       });
     }
 
-    function setupGalleryListener() {
-      // ← Вот здесь происходит загрузка фото при запуске сайта
-      db.collection('photos')
-        .orderBy('uploadedAt', 'desc')
-        .onSnapshot((snapshot) => {
-          const photos = [];
-          snapshot.forEach(doc => {
-            photos.push({ id: doc.id, ...doc.data() });
-          });
-          renderGallery(photos);
-        }, (error) => {
-          console.error(error);
-          showToast('Ошибка загрузки фото из Firebase', 'error');
-        });
+    function setupListener() {
+      db.collection('photos').orderBy('uploadedAt', 'desc').onSnapshot(snapshot => {
+        const photos = [];
+        snapshot.forEach(doc => photos.push({ id: doc.id, ...doc.data() }));
+        renderGallery(photos);
+      });
     }
 
     async function deletePhoto(photo) {
-      if (!confirm('Удалить это фото?')) return;
+      if (!confirm('Удалить фото?')) return;
       try {
         await storage.ref(photo.path).delete();
         await db.collection('photos').doc(photo.id).delete();
         showToast('Фото удалено');
       } catch (e) {
-        showToast('Не удалось удалить', 'error');
+        showToast('Ошибка при удалении', 'error');
       }
     }
 
@@ -160,52 +149,79 @@
       document.getElementById('modal-name').textContent = photo.name;
       document.getElementById('modal-date').textContent = photo.uploadedAt?.toDate?.().toLocaleString('ru-RU') || '';
       document.getElementById('modal-download').href = photo.url;
-
-      const modal = document.getElementById('modal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
+      document.getElementById('modal').classList.remove('hidden');
+      document.getElementById('modal').classList.add('flex');
     }
 
     function closeModal() {
-      const modal = document.getElementById('modal');
-      modal.classList.remove('flex');
-      modal.classList.add('hidden');
+      const m = document.getElementById('modal');
+      m.classList.remove('flex');
+      m.classList.add('hidden');
     }
 
     function deleteFromModal() {
-      // реализация удаления из модалки (можно расширить)
       closeModal();
+    }
+
+    // === ВОССТАНОВЛЕНИЕ ФОТО ИЗ STORAGE ===
+    async function restorePhotosFromStorage() {
+      const btns = document.querySelectorAll('button');
+      btns.forEach(b => b.disabled = true);
+
+      showToast('Ищу фото в Storage...');
+
+      try {
+        const list = await storage.ref('photos').listAll();
+        let added = 0;
+
+        for (const item of list.items) {
+          const url = await item.getDownloadURL();
+          
+          // Проверяем, есть ли уже такая запись
+          const existing = await db.collection('photos').where('path', '==', item.fullPath).get();
+          if (!existing.empty) continue;
+
+          await db.collection('photos').add({
+            url: url,
+            path: item.fullPath,
+            name: item.name,
+            size: 0,
+            uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          added++;
+        }
+
+        showToast(added > 0 ? `Восстановлено ${added} фото` : 'Новых фото не найдено');
+      } catch (e) {
+        console.error(e);
+        showToast('Ошибка восстановления', 'error');
+      } finally {
+        btns.forEach(b => b.disabled = false);
+      }
     }
 
     function initFirebase() {
       firebase.initializeApp(firebaseConfig);
       db = firebase.firestore();
       storage = firebase.storage();
-
-      // Запускаем загрузку фото сразу при старте сайта
-      setupGalleryListener();
+      setupListener();
     }
 
     function setupUpload() {
-      const dropzone = document.getElementById('dropzone');
+      const drop = document.getElementById('dropzone');
       const input = document.getElementById('file-input');
 
-      dropzone.onclick = () => input.click();
-
-      input.onchange = (e) => {
-        Array.from(e.target.files).forEach(file => {
-          if (file.type.startsWith('image/')) uploadFile(file);
-        });
+      drop.onclick = () => input.click();
+      input.onchange = e => {
+        Array.from(e.target.files).forEach(f => uploadFile(f));
         e.target.value = '';
       };
 
-      dropzone.ondrop = (e) => {
+      drop.ondrop = e => {
         e.preventDefault();
-        Array.from(e.dataTransfer.files).forEach(file => {
-          if (file.type.startsWith('image/')) uploadFile(file);
-        });
+        Array.from(e.dataTransfer.files).forEach(f => uploadFile(f));
       };
-      dropzone.ondragover = (e) => e.preventDefault();
+      drop.ondragover = e => e.preventDefault();
     }
 
     function uploadFile(file) {
@@ -213,27 +229,24 @@
       const task = ref.put(file);
 
       task.on('state_changed', null, 
-        (err) => showToast('Ошибка загрузки', 'error'),
+        () => showToast('Ошибка загрузки', 'error'),
         async () => {
           const url = await task.snapshot.ref.getDownloadURL();
           await db.collection('photos').add({
-            url: url,
-            path: ref.fullPath,
-            name: file.name,
-            size: file.size,
+            url, path: ref.fullPath, name: file.name, size: file.size,
             uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
           });
-          showToast('Фото сохранено в Firebase');
+          showToast('Фото сохранено');
         }
       );
     }
 
-    function startApp() {
+    function start() {
       initFirebase();
       setupUpload();
     }
 
-    window.onload = startApp;
+    window.onload = start;
   </script>
 </body>
 </html>
