@@ -7,297 +7,283 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SecureFace">
     <meta name="theme-color" content="#000000">
-    <title>SRC</title>
+    <title>SecureFace • Face ID</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=SF+Pro+Display:wght@400;500;600&amp;display=swap');
         
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
-        }
-        
+        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif; }
         .ios-bg { background: #000000; }
-        
-        .ios-card {
-            background: #1C1C1E;
-            border-radius: 20px;
-        }
+        .ios-card { background: #1C1C1E; border-radius: 20px; }
         
         .face-id-button {
-            transition: all 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+            transition: all 0.2s cubic-bezier(0.23, 1.0, 0.32, 1);
             background: linear-gradient(145deg, #0A84FF, #007AFF);
-            box-shadow: 0 4px 15px rgba(10, 132, 255, 0.3);
         }
+        .face-id-button:active { transform: scale(0.985); }
+        .face-id-button:disabled { background: #3A3A3C; }
         
-        .face-id-button:active {
-            transform: scale(0.985);
-            box-shadow: 0 2px 8px rgba(10, 132, 255, 0.4);
-        }
-        
-        .face-id-button:disabled {
-            background: #3A3A3C;
-            box-shadow: none;
-        }
-        
-        .lock-screen {
-            background: linear-gradient(180deg, #000000 0%, #0A0A0A 100%);
-        }
-        
-        .scan-animation {
-            position: relative;
-            overflow: hidden;
-        }
+        .lock-screen { background: linear-gradient(180deg, #000000 0%, #0A0A0A 100%); }
         
         .scan-line {
-            position: absolute;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(to right, transparent 0%, #0A84FF 20%, #0A84FF 80%, transparent 100%);
+            position: absolute; left: 0; right: 0; height: 3px;
+            background: linear-gradient(to right, transparent, #0A84FF, #0A84FF, transparent);
             box-shadow: 0 0 12px #0A84FF;
-            animation: scan 1.8s ease-in-out infinite;
-            z-index: 10;
+            animation: scan 1.6s ease-in-out infinite;
         }
+        @keyframes scan { 0% { top: 18%; } 50% { top: 82%; } 100% { top: 18%; } }
         
-        @keyframes scan {
-            0% { top: 15%; }
-            50% { top: 85%; }
-            100% { top: 15%; }
-        }
+        .main-content { animation: fadeInUp 0.35s cubic-bezier(0.23, 1, 0.32, 1); }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         
-        .main-content {
-            animation: fadeInUp 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .ios-toast {
-            animation: toastIn 0.3s ease forwards;
-        }
-        
-        .section-header {
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            color: #8E8E93;
-        }
-        
-        .safe-area {
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
-            padding-left: env(safe-area-inset-left);
-            padding-right: env(safe-area-inset-right);
-        }
-        
-        .status-bar { height: 44px; background: #000; }
-        
-        .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-        
+        .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
         .photo-item {
-            aspect-ratio: 1;
-            border-radius: 12px;
-            overflow: hidden;
-            position: relative;
-            background: #2C2C2E;
-            cursor: pointer;
+            aspect-ratio: 1; border-radius: 14px; overflow: hidden; position: relative;
+            background: #2C2C2E; cursor: pointer;
         }
-        
-        .photo-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
+        .photo-item img { width: 100%; height: 100%; object-fit: cover; }
         .photo-delete {
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            width: 26px;
-            height: 26px;
-            background: rgba(0,0,0,0.6);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 12px;
+            position: absolute; top: 6px; right: 6px; width: 24px; height: 24px;
+            background: rgba(0,0,0,0.65); border-radius: 50%; display: flex; align-items: center; justify-content: center;
         }
         
-        .photo-modal img {
-            max-height: 80vh;
-            border-radius: 16px;
+        .section-header { font-size: 12px; font-weight: 600; letter-spacing: 0.6px; color: #8E8E93; }
+        
+        .safe-area { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+        
+        .drag-area {
+            border: 2px dashed #3A3A3C;
+            transition: all 0.2s ease;
+        }
+        .drag-area.dragover {
+            border-color: #0A84FF;
+            background: rgba(10, 132, 255, 0.05);
         }
     </style>
 </head>
-<body class="ios-bg text-white min-h-screen overflow-x-hidden">
+<body class="ios-bg text-white min-h-screen">
     <!-- LOCK SCREEN -->
     <div id="lock-screen" class="min-h-screen flex flex-col safe-area">
-        <div class="status-bar flex items-center justify-center px-6 pt-2">
-            <div class="w-16 h-1 bg-white/30 rounded-full"></div>
-        </div>
+        <div class="h-11 flex items-center justify-center"><div class="w-16 h-1 bg-white/25 rounded-full"></div></div>
         
-        <div class="flex-1 flex flex-col items-center justify-center px-8">
+        <div class="flex-1 flex flex-col items-center justify-center px-7">
             <div class="mb-8">
-                <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-[#0A84FF] to-[#007AFF] flex items-center justify-center shadow-2xl shadow-blue-500/30">
-                    <i class="fa-solid fa-shield-halved text-white text-4xl"></i>
+                <div class="w-[78px] h-[78px] mx-auto rounded-2xl bg-gradient-to-br from-[#0A84FF] to-[#007AFF] flex items-center justify-center shadow-xl shadow-blue-500/30">
+                    <i class="fa-solid fa-shield-halved text-white text-[38px]"></i>
                 </div>
             </div>
             
-            <div class="text-center mb-3">
-                <h1 class="text-4xl font-semibold tracking-tight">TEST</h1>
-                <p class="text-[#8E8E93] text-lg mt-1">TEST 2</p>
+            <div class="text-center mb-2">
+                <h1 class="text-[34px] font-semibold tracking-[-0.5px]">SecureFace</h1>
+                <p class="text-[#8E8E93] text-[17px] mt-0.5">Защищённый доступ</p>
             </div>
             
-            <div class="my-8 relative">
-                <div id="face-scan-area" class="w-40 h-40 mx-auto rounded-[32px] border-[6px] border-[#3A3A3C] bg-[#1C1C1E] flex items-center justify-center relative overflow-hidden scan-animation">
-                    <div class="relative z-20">
-                        <div class="w-20 h-20 rounded-full border-[3.5px] border-[#0A84FF]/70 flex items-center justify-center">
-                            <div class="flex gap-5 mt-[-6px]">
-                                <div class="w-[9px] h-[9px] bg-[#0A84FF] rounded-full"></div>
-                                <div class="w-[9px] h-[9px] bg-[#0A84FF] rounded-full"></div>
-                            </div>
-                            <div class="absolute bottom-[18px] left-1/2 -translate-x-1/2 w-6 h-[5px] border-b-[2.5px] border-[#0A84FF]/70 rounded-full"></div>
+            <div class="my-9 relative">
+                <div id="face-scan-area" class="w-[158px] h-[158px] mx-auto rounded-[30px] border-[6px] border-[#3A3A3C] bg-[#1C1C1E] flex items-center justify-center relative overflow-hidden">
+                    <div class="w-[82px] h-[82px] rounded-full border-[3.5px] border-[#0A84FF]/70 flex items-center justify-center">
+                        <div class="flex gap-[18px] mt-[-4px]">
+                            <div class="w-[8px] h-[8px] bg-[#0A84FF] rounded-full"></div>
+                            <div class="w-[8px] h-[8px] bg-[#0A84FF] rounded-full"></div>
                         </div>
+                        <div class="absolute bottom-[17px] left-1/2 -translate-x-1/2 w-[26px] h-[4.5px] border-b-[2.2px] border-[#0A84FF]/70 rounded-full"></div>
                     </div>
-                    <div id="scan-line" class="scan-line hidden" style="top: 15%;"></div>
+                    <div id="scan-line" class="scan-line hidden" style="top: 18%;"></div>
                 </div>
             </div>
             
-            <div class="text-center mb-10">
-                <h2 class="text-2xl font-semibold tracking-tight">Авторизация по Face ID</h2>
-                <p class="text-[#8E8E93] mt-2 max-w-[260px]">Face ID</p>
+            <div class="text-center mb-9">
+                <h2 class="text-[23px] font-semibold tracking-tight">Авторизация по Face ID</h2>
+                <p class="text-[#8E8E93] text-[15px] mt-1.5 max-w-[240px]">Используйте Face ID для входа</p>
             </div>
             
             <button id="face-btn" onclick="handleFaceIDAuth()"
-                    class="face-id-button w-full max-w-[320px] py-4 px-8 rounded-2xl text-white font-semibold text-[17px] flex items-center justify-center gap-x-3 active:scale-[0.985]">
-                <i class="fa-solid fa-face-smile text-xl"></i>
+                    class="face-id-button w-full max-w-[300px] py-[15px] px-8 rounded-2xl text-white font-semibold text-[17px] flex items-center justify-center gap-x-3 active:scale-[0.985]">
+                <i class="fa-solid fa-face-smile text-[21px]"></i>
                 <span id="btn-text">Войти по Face ID</span>
             </button>
             
-            <div class="mt-4 text-center">
-                <p class="text-xs text-[#8E8E93]">ID</p>
-            </div>
+            <p class="mt-4 text-xs text-[#8E8E93]">На iPhone появится системный запрос</p>
         </div>
         
-        <div class="px-8 pb-8 text-center">
-            <p class="text-[11px] text-[#8E8E93]">TEST</p>
+        <div class="px-7 pb-7 text-center">
+            <p class="text-[10px] text-[#8E8E93]">iPhone • Face ID + WebAuthn</p>
         </div>
     </div>
     
     <!-- MAIN APP -->
     <div id="main-app" class="hidden min-h-screen flex flex-col safe-area ios-bg">
-        <div class="sticky top-0 z-50 bg-black/90 backdrop-blur-xl border-b border-white/10">
-            <div class="px-5 pt-3 pb-2 flex items-center justify-between">
-                <div class="flex items-center gap-x-2">
-                    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0A84FF] to-[#007AFF] flex items-center justify-center">
+        <div class="sticky top-0 z-50 bg-black/95 backdrop-blur-xl border-b border-white/10">
+            <div class="px-5 pt-3 pb-[9px] flex items-center justify-between">
+                <div class="flex items-center gap-x-2.5">
+                    <div class="w-8 h-8 rounded-2xl bg-gradient-to-br from-[#0A84FF] to-[#007AFF] flex items-center justify-center">
                         <i class="fa-solid fa-shield-halved text-white text-sm"></i>
                     </div>
-                    <span class="font-semibold text-xl tracking-tight">SecureFace</span>
+                    <span class="font-semibold text-[21px] tracking-tight">SecureFace</span>
                 </div>
-                <button onclick="logout()" class="px-4 py-2 text-sm font-medium text-[#0A84FF] active:opacity-70">Выйти</button>
+                <button onclick="logout()" class="text-[#0A84FF] text-[15px] font-medium px-4 py-1.5 active:opacity-60">Выйти</button>
             </div>
         </div>
         
         <div class="px-5 pt-6 pb-8 flex-1">
-            <!-- Welcome (clean, no name) -->
-            <div class="mb-6">
-                <h1 class="text-3xl font-semibold tracking-tight">Добро пожаловать</h1>
-                <p class="text-[#8E8E93] mt-1">Face ID успешно подтверждён</p>
+            <div class="mb-7">
+                <h1 class="text-[28px] font-semibold tracking-tight">Добро пожаловать</h1>
+                <p class="text-[#8E8E93] text-[15px] mt-0.5">Face ID подтверждён</p>
             </div>
             
             <!-- Status -->
-            <div class="ios-card p-5 mb-8 shadow-xl">
-                <div class="flex items-center gap-x-3">
-                    <i class="fa-solid fa-check-circle text-green-500 text-2xl"></i>
-                    <div>
-                        <div class="font-semibold">Face ID активен</div>
-                        <div class="text-xs text-[#8E8E93]">Доступ защищён биометрией</div>
-                    </div>
+            <div class="ios-card p-5 mb-8 flex items-center gap-x-4">
+                <i class="fa-solid fa-check-circle text-green-500 text-[26px]"></i>
+                <div>
+                    <div class="font-semibold text-[16px]">Face ID активен</div>
+                    <div class="text-xs text-[#8E8E93]">Доступ надёжно защищён</div>
                 </div>
             </div>
             
-            <!-- PHOTOS GALLERY -->
+            <!-- PHOTOS -->
             <div>
                 <div class="flex items-center justify-between mb-3 px-1">
                     <div>
-                        <div class="section-header">Мои фотографии</div>
-                        <div class="text-xs text-[#8E8E93]">Шифрование</div>
+                        <div class="section-header">ФОТОГРАФИИ</div>
+                        <div id="photo-count" class="text-xs text-[#8E8E93]"></div>
                     </div>
                     <button onclick="triggerPhotoUpload()" 
-                            class="px-4 py-2 bg-[#0A84FF] text-white text-sm font-semibold rounded-2xl flex items-center gap-x-2 active:opacity-90">
-                        <i class="fa-solid fa-plus"></i>
+                            class="px-5 py-2 bg-[#0A84FF] text-white text-[14px] font-semibold rounded-2xl flex items-center gap-x-2 active:opacity-90">
+                        <i class="fa-solid fa-plus text-sm"></i>
                         <span>Добавить</span>
                     </button>
+                </div>
+                
+                <!-- Drag & Drop Area -->
+                <div id="drag-area" 
+                     class="drag-area mb-3 rounded-3xl p-6 text-center border-2 border-dashed border-[#3A3A3C] hidden md:block"
+                     ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                    <i class="fa-solid fa-images text-2xl text-[#8E8E93] mb-2"></i>
+                    <p class="text-sm text-[#8E8E93]">Перетащите фото сюда или нажмите «Добавить»</p>
                 </div>
                 
                 <input type="file" id="photo-input" accept="image/*" multiple class="hidden" onchange="handlePhotoUpload(event)">
                 
                 <div id="photo-grid" class="photo-grid"></div>
                 
-                <div id="no-photos" class="hidden text-center py-10 text-[#8E8E93]">
-                    <i class="fa-solid fa-images text-4xl mb-3"></i>
-                    <p>Нет фотографий.<br>Добавить фото</p>
+                <div id="no-photos" class="hidden text-center py-9 text-[#8E8E93]">
+                    <i class="fa-solid fa-images text-[42px] mb-3"></i>
+                    <p class="text-[15px]">Нет фотографий</p>
+                    <p class="text-xs mt-1">Добавьте фото из папки телефона</p>
                 </div>
             </div>
         </div>
         
         <div class="px-5 pb-6">
-            <div onclick="resetAllData()" class="text-center py-3 text-xs text-[#8E8E93] active:text-red-400 cursor-pointer">
-                Сбросить все данные
+            <div onclick="resetAllData()" class="text-center py-2.5 text-xs text-[#8E8E93] active:text-red-400 cursor-pointer">
+                Сбросить все фото
             </div>
         </div>
     </div>
     
     <!-- Photo Modal -->
-    <div id="photo-modal" onclick="closePhotoModal()" class="hidden fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4">
-        <div onclick="event.stopImmediatePropagation()" class="w-full max-w-[90%]">
-            <div class="flex justify-end mb-3">
-                <button onclick="closePhotoModal()" class="text-white/70 px-4 py-1"><i class="fa-solid fa-times text-2xl"></i></button>
+    <div id="photo-modal" onclick="closePhotoModal()" class="hidden fixed inset-0 bg-black/95 z-[100] flex items-center justify-center p-4">
+        <div onclick="event.stopImmediatePropagation()" class="w-full max-w-[92%]">
+            <div class="flex justify-end mb-2">
+                <button onclick="closePhotoModal()" class="px-5 py-2 text-white/70"><i class="fa-solid fa-times text-[26px]"></i></button>
             </div>
-            <div class="flex justify-center">
-                <img id="modal-image" class="max-h-[75vh] w-auto rounded-3xl shadow-2xl" alt="">
-            </div>
-            <div class="mt-5 text-center">
-                <button onclick="deleteCurrentPhoto()" class="px-6 py-2.5 bg-red-500/90 text-white rounded-2xl text-sm font-medium flex items-center gap-x-2 mx-auto">
+            <img id="modal-image" class="w-full max-h-[72vh] object-contain rounded-3xl shadow-2xl mx-auto" alt="">
+            <div class="mt-4 flex justify-center">
+                <button onclick="deleteCurrentPhoto()" class="px-7 py-[10px] bg-red-500/90 text-white text-sm font-medium rounded-2xl flex items-center gap-x-2">
                     <i class="fa-solid fa-trash"></i>
-                    <span>Удалить фото</span>
+                    <span>Удалить</span>
                 </button>
             </div>
         </div>
     </div>
     
-    <div id="toast" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 px-5 py-3 bg-[#1C1C1E] border border-white/10 rounded-3xl shadow-2xl max-w-[280px] z-[200]">
-        <div class="flex items-center gap-x-3 text-sm">
+    <div id="toast" class="hidden fixed bottom-7 left-1/2 -translate-x-1/2 px-5 py-[11px] bg-[#1C1C1E] border border-white/10 rounded-3xl shadow-2xl max-w-[260px] z-[200]">
+        <div class="flex items-center gap-x-3 text-[14px]">
             <i id="toast-icon" class="fa-solid fa-info-circle text-[#0A84FF]"></i>
             <span id="toast-text" class="font-medium"></span>
         </div>
     </div>
     
     <script>
-        // ==================== DATA ====================
+        // ==================== CONFIG ====================
+        const MAX_PHOTOS = 25;
+        const MAX_WIDTH = 1100;
+        const JPEG_QUALITY = 0.82;
+        
         let photos = [];
         let currentPhotoIndex = null;
+        let isProcessing = false;
         
+        // ==================== UTILS ====================
+        function showToast(msg, type = "info") {
+            const toast = document.getElementById('toast');
+            const text = document.getElementById('toast-text');
+            const icon = document.getElementById('toast-icon');
+            
+            text.textContent = msg;
+            icon.className = type === "error" 
+                ? "fa-solid fa-exclamation-circle text-red-400" 
+                : "fa-solid fa-info-circle text-[#0A84FF]";
+            
+            toast.classList.remove('hidden');
+            toast.style.opacity = '1';
+            
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.25s ease';
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                    toast.style.transition = '';
+                    toast.style.opacity = '1';
+                }, 200);
+            }, 2100);
+        }
+        
+        function updatePhotoCount() {
+            const el = document.getElementById('photo-count');
+            el.textContent = photos.length > 0 ? `${photos.length} фото` : '';
+        }
+        
+        // ==================== IMAGE COMPRESSION (OPTIMIZED) ====================
+        function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let { width, height } = img;
+                        
+                        if (width > MAX_WIDTH) {
+                            height = Math.round(height * (MAX_WIDTH / width));
+                            width = MAX_WIDTH;
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        const dataUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+                        resolve(dataUrl);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        // ==================== DATA ====================
         function loadData() {
             try {
                 photos = JSON.parse(localStorage.getItem('sf_photos') || '[]');
-            } catch(e) { photos = []; }
+            } catch { photos = []; }
         }
         
         function saveData() {
             localStorage.setItem('sf_photos', JSON.stringify(photos));
         }
         
-        // ==================== PHOTOS ====================
         function renderPhotos() {
             const grid = document.getElementById('photo-grid');
             const noPhotos = document.getElementById('no-photos');
@@ -305,6 +291,7 @@
             
             if (photos.length === 0) {
                 noPhotos.classList.remove('hidden');
+                updatePhotoCount();
                 return;
             }
             noPhotos.classList.add('hidden');
@@ -313,14 +300,57 @@
                 const div = document.createElement('div');
                 div.className = 'photo-item';
                 div.innerHTML = `
-                    <img src="${photo.dataUrl}" alt="">
+                    <img src="${photo.dataUrl}" loading="lazy">
                     <div class="photo-delete" onclick="event.stopImmediatePropagation(); deletePhoto(${index});">
-                        <i class="fa-solid fa-trash text-xs"></i>
+                        <i class="fa-solid fa-trash text-[11px]"></i>
                     </div>
                 `;
                 div.onclick = () => openPhotoModal(index);
                 grid.appendChild(div);
             });
+            updatePhotoCount();
+        }
+        
+        // ==================== PHOTO UPLOAD (OPTIMIZED) ====================
+        async function processFiles(files) {
+            if (!files || files.length === 0) return;
+            
+            const btns = document.querySelectorAll('button');
+            btns.forEach(b => b.disabled = true);
+            
+            let added = 0;
+            const startCount = photos.length;
+            
+            for (const file of files) {
+                if (photos.length >= MAX_PHOTOS) {
+                    showToast(`Достигнут лимит ${MAX_PHOTOS} фото`, "error");
+                    break;
+                }
+                if (!file.type.startsWith('image/')) continue;
+                
+                try {
+                    const compressed = await compressImage(file);
+                    photos.unshift({
+                        id: Date.now() + Math.random(),
+                        dataUrl: compressed,
+                        name: file.name,
+                        date: new Date().toISOString()
+                    });
+                    added++;
+                } catch (e) {
+                    console.warn("Ошибка обработки фото:", e);
+                }
+            }
+            
+            btns.forEach(b => b.disabled = false);
+            
+            if (added > 0) {
+                saveData();
+                renderPhotos();
+                showToast(`Добавлено ${added} фото`);
+            } else if (startCount === photos.length) {
+                showToast("Не удалось добавить фото", "error");
+            }
         }
         
         function triggerPhotoUpload() {
@@ -328,37 +358,23 @@
         }
         
         function handlePhotoUpload(e) {
-            const files = Array.from(e.target.files || []);
-            if (files.length === 0) return;
-            
-            let added = 0;
-            const max = 30;
-            
-            files.forEach(file => {
-                if (photos.length >= max) {
-                    showToast("Лимит 30 фото. Удалите старые.", "error");
-                    return;
-                }
-                if (!file.type.startsWith('image/')) return;
-                
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    photos.unshift({
-                        id: Date.now() + Math.random(),
-                        dataUrl: ev.target.result,
-                        name: file.name,
-                        date: new Date().toISOString()
-                    });
-                    added++;
-                    if (added === files.length) {
-                        saveData();
-                        renderPhotos();
-                        showToast(`Добавлено ${added} фото`);
-                    }
-                };
-                reader.readAsDataURL(file);
-            });
+            processFiles(e.target.files);
             e.target.value = '';
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById('drag-area').classList.remove('dragover');
+            processFiles(e.dataTransfer.files);
+        }
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+            document.getElementById('drag-area').classList.add('dragover');
+        }
+        
+        function handleDragLeave(e) {
+            document.getElementById('drag-area').classList.remove('dragover');
         }
         
         function openPhotoModal(index) {
@@ -378,7 +394,7 @@
         }
         
         function deletePhoto(index) {
-            if (!confirm('Удалить фото?')) return;
+            if (!confirm('Удалить это фото?')) return;
             photos.splice(index, 1);
             saveData();
             renderPhotos();
@@ -390,35 +406,33 @@
         }
         
         function resetAllData() {
-            if (!confirm('Сбросить все фото?')) return;
+            if (!confirm('Удалить все фото?')) return;
             localStorage.removeItem('sf_photos');
             photos = [];
             renderPhotos();
-            showToast('Данные сброшены');
+            showToast('Все фото удалены');
         }
         
-        // ==================== REAL WEBAUTHN FACE ID ====================
+        // ==================== REAL FACE ID (OPTIMIZED) ====================
         function bufferToBase64(buffer) {
-            return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
+            return btoa(String.fromCharCode(...new Uint8Array(buffer)));
         }
         
         function base64ToBuffer(base64) {
-            const binary = atob(base64);
-            const bytes = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            const bin = atob(base64);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
             return bytes.buffer;
         }
         
-        async function isPlatformAuthenticatorAvailable() {
+        async function isFaceIDAvailable() {
             if (!window.PublicKeyCredential) return false;
             try {
                 return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-            } catch {
-                return false;
-            }
+            } catch { return false; }
         }
         
-        async function registerPasskey() {
+        async function setupFaceID() {
             const challenge = crypto.getRandomValues(new Uint8Array(32));
             const userId = crypto.getRandomValues(new Uint8Array(16));
             
@@ -426,14 +440,10 @@
                 publicKey: {
                     challenge,
                     rp: { name: "SecureFace", id: window.location.hostname || "localhost" },
-                    user: { id: userId, name: "user@secureface.app", displayName: "User" },
+                    user: { id: userId, name: "user", displayName: "User" },
                     pubKeyCredParams: [{ type: "public-key", alg: -7 }],
-                    authenticatorSelection: {
-                        authenticatorAttachment: "platform",
-                        userVerification: "required",
-                        residentKey: "required"
-                    },
-                    timeout: 60000
+                    authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required", residentKey: "required" },
+                    timeout: 55000
                 }
             };
             
@@ -443,43 +453,34 @@
                     localStorage.setItem('sf_cred_id', bufferToBase64(cred.rawId));
                     return true;
                 }
-            } catch (e) {
-                console.warn("Register error:", e);
-            }
+            } catch (e) { console.warn(e); }
             return false;
         }
         
-        async function authenticateWithPasskey() {
-            const credIdB64 = localStorage.getItem('sf_cred_id');
-            if (!credIdB64) return false;
-            
-            const allowCredentials = [{ id: base64ToBuffer(credIdB64), type: "public-key" }];
-            const challenge = crypto.getRandomValues(new Uint8Array(32));
+        async function verifyFaceID() {
+            const credId = localStorage.getItem('sf_cred_id');
+            if (!credId) return false;
             
             const options = {
                 publicKey: {
-                    challenge,
+                    challenge: crypto.getRandomValues(new Uint8Array(32)),
                     rpId: window.location.hostname || "localhost",
-                    allowCredentials,
+                    allowCredentials: [{ id: base64ToBuffer(credId), type: "public-key" }],
                     userVerification: "required",
-                    timeout: 60000
+                    timeout: 55000
                 }
             };
             
             try {
-                const assertion = await navigator.credentials.get(options);
-                return !!assertion;
-            } catch (e) {
-                console.warn("Auth error:", e);
-                return false;
-            }
+                const result = await navigator.credentials.get(options);
+                return !!result;
+            } catch (e) { console.warn(e); return false; }
         }
         
         async function simulateFaceID() {
-            return new Promise(resolve => setTimeout(() => resolve(true), 1350));
+            await new Promise(r => setTimeout(r, 1250));
+            return true;
         }
-        
-        let isProcessing = false;
         
         async function handleFaceIDAuth() {
             if (isProcessing) return;
@@ -491,27 +492,24 @@
             const scanArea = document.getElementById('face-scan-area');
             
             btn.disabled = true;
-            btnText.textContent = "Сканирование...";
+            btnText.textContent = "Сканирование лица...";
             scanLine.classList.remove('hidden');
             scanArea.style.borderColor = '#0A84FF';
-            scanArea.style.boxShadow = '0 0 0 8px rgba(10,132,255,0.2)';
+            scanArea.style.boxShadow = '0 0 0 9px rgba(10,132,255,0.18)';
+            
+            const hasCred = !!localStorage.getItem('sf_cred_id');
+            const supported = await isFaceIDAvailable();
             
             let success = false;
-            const hasCred = !!localStorage.getItem('sf_cred_id');
-            const supported = await isPlatformAuthenticatorAvailable();
             
             try {
                 if (supported) {
-                    if (!hasCred) {
-                        success = await registerPasskey();
-                    } else {
-                        success = await authenticateWithPasskey();
-                    }
+                    success = hasCred ? await verifyFaceID() : await setupFaceID();
                 } else {
                     success = await simulateFaceID();
-                    if (!hasCred) localStorage.setItem('sf_cred_id', 'simulated-' + Date.now());
+                    if (!hasCred) localStorage.setItem('sf_cred_id', 'demo-' + Date.now());
                 }
-            } catch (e) {
+            } catch {
                 success = await simulateFaceID();
             }
             
@@ -526,15 +524,15 @@
                 
                 setTimeout(() => {
                     unlockApp();
-                }, 380);
+                }, 360);
             } else {
-                showToast("Face ID не подтверждён. Попробуйте снова.", "error");
+                showToast("Face ID не подтверждён", "error");
                 setTimeout(() => {
                     btn.disabled = false;
                     btnText.textContent = "Войти по Face ID";
                     btn.style.background = 'linear-gradient(145deg, #0A84FF, #007AFF)';
                     isProcessing = false;
-                }, 1100);
+                }, 950);
             }
         }
         
@@ -542,9 +540,9 @@
             const lock = document.getElementById('lock-screen');
             const app = document.getElementById('main-app');
             
-            lock.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+            lock.style.transition = 'all 0.32s ease';
             lock.style.opacity = '0';
-            lock.style.transform = 'translateY(-12px)';
+            lock.style.transform = 'translateY(-10px)';
             
             setTimeout(() => {
                 lock.style.display = 'none';
@@ -553,7 +551,7 @@
                 
                 loadData();
                 renderPhotos();
-            }, 320);
+            }, 280);
         }
         
         function logout() {
@@ -561,7 +559,7 @@
             const app = document.getElementById('main-app');
             const lock = document.getElementById('lock-screen');
             
-            app.style.transition = 'opacity 0.25s ease';
+            app.style.transition = 'opacity 0.22s ease';
             app.style.opacity = '0';
             
             setTimeout(() => {
@@ -577,46 +575,19 @@
                 btnText.textContent = "Войти по Face ID";
                 btn.style.background = 'linear-gradient(145deg, #0A84FF, #007AFF)';
                 isProcessing = false;
-            }, 220);
+            }, 180);
         }
         
-        function showToast(message, type = "info") {
-            const toast = document.getElementById('toast');
-            const text = document.getElementById('toast-text');
-            const icon = document.getElementById('toast-icon');
-            
-            text.textContent = message;
-            icon.className = type === "error" 
-                ? "fa-solid fa-exclamation-circle text-red-400" 
-                : "fa-solid fa-info-circle text-[#0A84FF]";
-            
-            toast.classList.remove('hidden');
-            toast.style.opacity = '1';
-            
-            setTimeout(() => {
-                toast.style.transition = 'all 0.3s ease';
-                toast.style.opacity = '0';
-                setTimeout(() => {
-                    toast.classList.add('hidden');
-                    toast.style.transition = '';
-                    toast.style.opacity = '1';
-                }, 250);
-            }, 2300);
-        }
-        
-        function initializeApp() {
-            // Auto-unlock if already authenticated persistently
+        function initialize() {
+            // Auto login if already authenticated
             if (localStorage.getItem('sf_authenticated') === 'true') {
-                const lock = document.getElementById('lock-screen');
-                const app = document.getElementById('main-app');
-                lock.style.display = 'none';
-                app.style.display = 'flex';
-                
+                document.getElementById('lock-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'flex';
                 loadData();
                 renderPhotos();
             }
             
-            // Keyboard test
+            // Keyboard shortcut
             document.addEventListener('keydown', e => {
                 if (e.key === "/" && document.getElementById('lock-screen').style.display !== 'none') {
                     e.preventDefault();
@@ -625,23 +596,26 @@
             });
             
             // Long press on face area
-            const faceArea = document.getElementById('face-scan-area');
-            if (faceArea) {
-                let timer;
-                faceArea.addEventListener('touchstart', () => {
-                    timer = setTimeout(() => {
-                        if (!isProcessing && document.getElementById('lock-screen').style.display !== 'none') {
-                            document.getElementById('face-btn').click();
-                        }
-                    }, 850);
+            const face = document.getElementById('face-scan-area');
+            if (face) {
+                let t;
+                face.addEventListener('touchstart', () => {
+                    t = setTimeout(() => {
+                        if (!isProcessing) document.getElementById('face-btn').click();
+                    }, 820);
                 });
-                faceArea.addEventListener('touchend', () => clearTimeout(timer));
+                face.addEventListener('touchend', () => clearTimeout(t));
             }
             
-            console.log('%c[SecureFace] Готово. Реальный Face ID + persistent фото.', 'color:#666');
+            // Show drag area only on desktop
+            if (window.innerWidth > 768) {
+                document.getElementById('drag-area').classList.remove('hidden');
+            }
+            
+            console.log('%c[SecureFace] Оптимизировано: реальный Face ID + сжатие фото', 'color:#555');
         }
         
-        window.onload = initializeApp;
+        window.onload = initialize;
     </script>
 </body>
 </html>
