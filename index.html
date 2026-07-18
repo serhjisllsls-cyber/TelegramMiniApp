@@ -3,71 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firebase Галерея</title>
+  <title>Стена Признаний • Анонимно</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    .confession-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .confession-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    }
+  </style>
 </head>
 <body class="bg-zinc-950 text-white">
-  <div class="max-w-7xl mx-auto px-6 py-8">
-    <div class="flex justify-between items-center mb-8">
-      <div>
-        <h1 class="text-4xl font-semibold">Firebase Галерея</h1>
-        <p class="text-zinc-400">Фото берутся из Firebase при каждой загрузке</p>
-      </div>
-      <div class="flex gap-x-3">
-        <button onclick="restorePhotosFromStorage()" 
-                class="px-5 py-2 bg-amber-600 hover:bg-amber-700 rounded-2xl text-sm flex items-center gap-x-2">
-          <i class="fa-solid fa-sync"></i>
-          <span>Восстановить фото из Storage</span>
-        </button>
-        <div class="px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-2xl text-sm">
-          <span id="photo-count" class="font-semibold text-emerald-400">0</span> фото
+  <div class="max-w-2xl mx-auto px-6 py-10">
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <div class="flex justify-center mb-4">
+        <div class="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center">
+          <i class="fa-solid fa-comments text-4xl text-zinc-400"></i>
         </div>
+      </div>
+      <h1 class="text-4xl font-semibold tracking-tight">Стена Признаний</h1>
+      <p class="text-zinc-400 mt-2">Анонимно • В реальном времени</p>
+      <div class="mt-4 inline-flex items-center gap-x-2 px-4 py-1.5 bg-zinc-900 border border-zinc-700 rounded-2xl text-sm">
+        <span id="total-count" class="font-semibold text-emerald-400">0</span>
+        <span class="text-zinc-400">признаний</span>
       </div>
     </div>
 
-    <!-- Загрузка новых фото -->
-    <div id="dropzone" class="border-2 border-dashed border-zinc-700 hover:border-indigo-500 bg-zinc-900 rounded-3xl p-10 text-center cursor-pointer mb-8">
-      <i class="fa-solid fa-cloud-upload-alt text-5xl text-indigo-400 mb-3"></i>
-      <h3 class="text-xl font-semibold">Перетащите фото сюда или нажмите</h3>
-      <input type="file" id="file-input" multiple accept="image/*" class="hidden">
-    </div>
-
-    <h2 class="font-semibold text-xl mb-4">Сохранённые в Firebase</h2>
-    <div id="gallery" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5"></div>
-  </div>
-
-  <!-- Модалка -->
-  <div id="modal" onclick="if(event.target.id==='modal') closeModal()" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6">
-    <div onclick="event.stopImmediatePropagation()" class="bg-zinc-900 border border-zinc-700 w-full max-w-4xl rounded-3xl overflow-hidden">
-      <div class="relative bg-black">
-        <img id="modal-image" class="max-h-[70vh] w-full object-contain" alt="">
-        <button onclick="closeModal()" class="absolute top-4 right-4 w-10 h-10 bg-black/70 rounded-2xl flex items-center justify-center">
-          <i class="fa-solid fa-times text-xl"></i>
+    <!-- Форма отправки -->
+    <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-6 mb-8">
+      <textarea id="message-input" 
+                class="w-full bg-zinc-950 border border-zinc-700 rounded-2xl p-4 text-lg resize-y min-h-[120px] focus:outline-none focus:border-zinc-500"
+                placeholder="Напиши что-нибудь анонимно..."></textarea>
+      
+      <div class="flex justify-between items-center mt-4">
+        <div class="text-xs text-zinc-500">Максимум 500 символов</div>
+        <button onclick="sendConfession()"
+                class="px-8 py-3 bg-white text-black font-semibold rounded-2xl hover:bg-zinc-200 transition-colors flex items-center gap-x-2">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>Отправить</span>
         </button>
       </div>
-      <div class="p-6 flex justify-between items-center border-t border-zinc-700">
-        <div>
-          <div id="modal-name" class="font-semibold text-xl"></div>
-          <div id="modal-date" class="text-sm text-zinc-400"></div>
-        </div>
-        <div class="flex gap-x-3">
-          <button onclick="deleteFromModal()" class="px-5 py-2 bg-red-600 hover:bg-red-700 rounded-2xl flex items-center gap-x-2">
-            <i class="fa-solid fa-trash"></i> Удалить
-          </button>
-          <a id="modal-download" href="#" download class="px-5 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 rounded-2xl flex items-center gap-x-2">
-            <i class="fa-solid fa-download"></i> Скачать
-          </a>
-        </div>
-      </div>
+    </div>
+
+    <!-- Список признаний -->
+    <div class="space-y-4" id="confessions-list">
+      <!-- JS заполнит -->
     </div>
   </div>
 
-  <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-2"></div>
-
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
   <script>
     const firebaseConfig = {
@@ -79,174 +70,129 @@
       appId: "1:1052575818863:web:5931161b568b94b30e599a"
     };
 
-    let db, storage;
-
-    function showToast(msg, type = 'success') {
-      const el = document.createElement('div');
-      el.className = `px-5 py-3 rounded-2xl text-sm ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`;
-      el.textContent = msg;
-      document.getElementById('toast-container').appendChild(el);
-      setTimeout(() => el.remove(), 2600);
-    }
-
-    function renderGallery(photos) {
-      const gallery = document.getElementById('gallery');
-      gallery.innerHTML = '';
-      document.getElementById('photo-count').textContent = photos.length;
-
-      if (photos.length === 0) {
-        gallery.innerHTML = `<div class="col-span-full py-12 text-center text-zinc-400">Нет фото в Firebase</div>`;
-        return;
-      }
-
-      photos.forEach(photo => {
-        const card = document.createElement('div');
-        card.className = `group relative bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden`;
-
-        const dateStr = photo.uploadedAt?.toDate?.().toLocaleString('ru-RU', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) || '';
-
-        card.innerHTML = `
-          <img src="${photo.url}" class="w-full aspect-[4/3] object-cover cursor-pointer">
-          <button class="delete-btn absolute top-3 right-3 px-3 py-1 bg-black/60 hover:bg-red-600 rounded-2xl text-sm opacity-0 group-hover:opacity-100 transition-all">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-          <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 p-4">
-            <div class="font-semibold truncate">${photo.name}</div>
-            <div class="text-xs text-emerald-400">${dateStr}</div>
-          </div>
-        `;
-
-        card.querySelector('img').onclick = () => openModal(photo);
-        card.querySelector('.delete-btn').onclick = e => {
-          e.stopImmediatePropagation();
-          deletePhoto(photo);
-        };
-        gallery.appendChild(card);
-      });
-    }
-
-    function setupListener() {
-      db.collection('photos').orderBy('uploadedAt', 'desc').onSnapshot(snapshot => {
-        const photos = [];
-        snapshot.forEach(doc => photos.push({ id: doc.id, ...doc.data() }));
-        renderGallery(photos);
-      });
-    }
-
-    async function deletePhoto(photo) {
-      if (!confirm('Удалить фото?')) return;
-      try {
-        await storage.ref(photo.path).delete();
-        await db.collection('photos').doc(photo.id).delete();
-        showToast('Фото удалено');
-      } catch (e) {
-        showToast('Ошибка при удалении', 'error');
-      }
-    }
-
-    function openModal(photo) {
-      document.getElementById('modal-image').src = photo.url;
-      document.getElementById('modal-name').textContent = photo.name;
-      document.getElementById('modal-date').textContent = photo.uploadedAt?.toDate?.().toLocaleString('ru-RU') || '';
-      document.getElementById('modal-download').href = photo.url;
-      document.getElementById('modal').classList.remove('hidden');
-      document.getElementById('modal').classList.add('flex');
-    }
-
-    function closeModal() {
-      const m = document.getElementById('modal');
-      m.classList.remove('flex');
-      m.classList.add('hidden');
-    }
-
-    function deleteFromModal() {
-      closeModal();
-    }
-
-    // === ВОССТАНОВЛЕНИЕ ФОТО ИЗ STORAGE ===
-    async function restorePhotosFromStorage() {
-      const btns = document.querySelectorAll('button');
-      btns.forEach(b => b.disabled = true);
-
-      showToast('Ищу фото в Storage...');
-
-      try {
-        const list = await storage.ref('photos').listAll();
-        let added = 0;
-
-        for (const item of list.items) {
-          const url = await item.getDownloadURL();
-          
-          // Проверяем, есть ли уже такая запись
-          const existing = await db.collection('photos').where('path', '==', item.fullPath).get();
-          if (!existing.empty) continue;
-
-          await db.collection('photos').add({
-            url: url,
-            path: item.fullPath,
-            name: item.name,
-            size: 0,
-            uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-          added++;
-        }
-
-        showToast(added > 0 ? `Восстановлено ${added} фото` : 'Новых фото не найдено');
-      } catch (e) {
-        console.error(e);
-        showToast('Ошибка восстановления', 'error');
-      } finally {
-        btns.forEach(b => b.disabled = false);
-      }
-    }
+    let db;
 
     function initFirebase() {
       firebase.initializeApp(firebaseConfig);
       db = firebase.firestore();
-      storage = firebase.storage();
-      setupListener();
+      loadConfessions();
     }
 
-    function setupUpload() {
-      const drop = document.getElementById('dropzone');
-      const input = document.getElementById('file-input');
+    // Загрузка признаний в реальном времени
+    function loadConfessions() {
+      db.collection('confessions')
+        .orderBy('createdAt', 'desc')
+        .onSnapshot((snapshot) => {
+          const list = document.getElementById('confessions-list');
+          list.innerHTML = '';
 
-      drop.onclick = () => input.click();
-      input.onchange = e => {
-        Array.from(e.target.files).forEach(f => uploadFile(f));
-        e.target.value = '';
-      };
+          document.getElementById('total-count').textContent = snapshot.size;
 
-      drop.ondrop = e => {
-        e.preventDefault();
-        Array.from(e.dataTransfer.files).forEach(f => uploadFile(f));
-      };
-      drop.ondragover = e => e.preventDefault();
-    }
+          if (snapshot.empty) {
+            list.innerHTML = `
+              <div class="text-center py-12 text-zinc-400">
+                <i class="fa-solid fa-inbox text-4xl mb-3 opacity-50"></i>
+                <p>Пока нет признаний.<br>Стань первым!</p>
+              </div>
+            `;
+            return;
+          }
 
-    function uploadFile(file) {
-      const ref = storage.ref(`photos/${Date.now()}-${file.name}`);
-      const task = ref.put(file);
-
-      task.on('state_changed', null, 
-        () => showToast('Ошибка загрузки', 'error'),
-        async () => {
-          const url = await task.snapshot.ref.getDownloadURL();
-          await db.collection('photos').add({
-            url, path: ref.fullPath, name: file.name, size: file.size,
-            uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const card = createConfessionCard(doc.id, data);
+            list.appendChild(card);
           });
-          showToast('Фото сохранено');
+        });
+    }
+
+    function createConfessionCard(id, data) {
+      const div = document.createElement('div');
+      div.className = `confession-card bg-zinc-900 border border-zinc-700 rounded-3xl p-6`;
+
+      const date = data.createdAt?.toDate 
+        ? data.createdAt.toDate().toLocaleString('ru-RU', { 
+            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
+          }) 
+        : 'только что';
+
+      div.innerHTML = `
+        <div class="text-lg leading-relaxed">${data.message}</div>
+        
+        <div class="flex items-center justify-between mt-5">
+          <div class="text-xs text-zinc-500">${date}</div>
+          
+          <button onclick="likeConfession('${id}', this)"
+                  class="flex items-center gap-x-2 px-4 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-2xl text-sm transition-colors">
+            <i class="fa-solid fa-heart text-red-400"></i>
+            <span class="font-medium">${data.likes || 0}</span>
+          </button>
+        </div>
+      `;
+      return div;
+    }
+
+    // Отправка признания
+    async function sendConfession() {
+      const input = document.getElementById('message-input');
+      const message = input.value.trim();
+
+      if (!message) return;
+      if (message.length > 500) {
+        alert('Слишком длинное сообщение (максимум 500 символов)');
+        return;
+      }
+
+      try {
+        await db.collection('confessions').add({
+          message: message,
+          likes: 0,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        input.value = '';
+      } catch (error) {
+        console.error(error);
+        alert('Ошибка отправки. Проверь правила Firestore.');
+      }
+    }
+
+    // Лайк
+    async function likeConfession(id, buttonElement) {
+      const span = buttonElement.querySelector('span');
+      let currentLikes = parseInt(span.textContent) || 0;
+
+      // Оптимистичное обновление
+      span.textContent = currentLikes + 1;
+
+      try {
+        await db.collection('confessions').doc(id).update({
+          likes: firebase.firestore.FieldValue.increment(1)
+        });
+      } catch (error) {
+        // Если ошибка — возвращаем старое значение
+        span.textContent = currentLikes;
+        console.error(error);
+      }
+    }
+
+    // Обработка Enter
+    function setupKeyboard() {
+      const input = document.getElementById('message-input');
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendConfession();
         }
-      );
+      });
     }
 
-    function start() {
+    function startApp() {
       initFirebase();
-      setupUpload();
+      setupKeyboard();
     }
 
-    window.onload = start;
+    window.onload = startApp;
   </script>
 </body>
 </html>
