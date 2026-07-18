@@ -2,73 +2,664 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Смотрим вместе</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SecureFace">
+    <meta name="theme-color" content="#000000">
+    <title>SecureFace • Face ID</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=SF+Pro+Display:wght@400;500;600&amp;display=swap');
+        
+        :root {
+            --ios-blue: #0A84FF;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+        }
+        
+        .ios-bg {
+            background: #000000;
+        }
+        
+        .ios-card {
+            background: #1C1C1E;
+            border-radius: 20px;
+        }
+        
+        .face-id-button {
+            transition: all 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+            background: linear-gradient(145deg, #0A84FF, #007AFF);
+            box-shadow: 0 4px 15px rgba(10, 132, 255, 0.3);
+        }
+        
+        .face-id-button:active {
+            transform: scale(0.985);
+            box-shadow: 0 2px 8px rgba(10, 132, 255, 0.4);
+        }
+        
+        .face-id-button:disabled {
+            background: #3A3A3C;
+            box-shadow: none;
+        }
+        
+        .lock-screen {
+            background: linear-gradient(180deg, #000000 0%, #0A0A0A 100%);
+        }
+        
+        .scan-animation {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .scan-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(
+                to right,
+                transparent 0%,
+                #0A84FF 20%,
+                #0A84FF 80%,
+                transparent 100%
+            );
+            box-shadow: 0 0 12px #0A84FF;
+            animation: scan 1.8s ease-in-out infinite;
+            z-index: 10;
+        }
+        
+        @keyframes scan {
+            0% { top: 15%; }
+            50% { top: 85%; }
+            100% { top: 15%; }
+        }
+        
+        .face-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .main-content {
+            animation: fadeInUp 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .ios-toast {
+            animation: toastIn 0.3s ease forwards;
+        }
+        
+        .section-header {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #8E8E93;
+        }
+        
+        .app-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .app-card:active {
+            transform: scale(0.985);
+        }
+        
+        .safe-area {
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+        
+        .status-bar {
+            height: 44px;
+            background: #000;
+        }
+        
+        .native-prompt-hint {
+            font-size: 12px;
+            color: #8E8E93;
+        }
+    </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-white p-4">
-    <div class="max-w-md mx-auto">
-
-        <!-- Экран авторизации -->
-        <div id="authScreen">
-            <div class="text-center py-10">
-                <h1 class="text-4xl font-bold mb-2">Смотрим вместе</h1>
-                <p class="text-gray-400">С друзьями</p>
+<body class="ios-bg text-white min-h-screen overflow-x-hidden">
+    <!-- LOCK SCREEN -->
+    <div id="lock-screen" class="min-h-screen flex flex-col safe-area">
+        <!-- Status bar simulation -->
+        <div class="status-bar flex items-center justify-center px-6 pt-2">
+            <div class="w-16 h-1 bg-white/30 rounded-full"></div>
+        </div>
+        
+        <div class="flex-1 flex flex-col items-center justify-center px-8">
+            <!-- App Icon / Logo -->
+            <div class="mb-8">
+                <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-[#0A84FF] to-[#007AFF] flex items-center justify-center shadow-2xl shadow-blue-500/30">
+                    <i class="fa-solid fa-shield-halved text-white text-4xl"></i>
+                </div>
             </div>
-
-            <input id="nickname" type="text" placeholder="Никнейм" 
-                   class="w-full p-5 rounded-3xl bg-gray-800 mb-4 text-lg">
-
-            <input id="password" type="password" placeholder="Пароль" 
-                   class="w-full p-5 rounded-3xl bg-gray-800 mb-6 text-lg">
-
-            <div class="mb-6">
-                <label class="block text-sm mb-2">Аватарка (необязательно)</label>
-                <input id="avatarInput" type="file" accept="image/*" 
-                       class="w-full bg-gray-800 p-3 rounded-3xl">
+            
+            <!-- Title -->
+            <div class="text-center mb-3">
+                <h1 class="text-4xl font-semibold tracking-tight">SecureFace</h1>
+                <p class="text-[#8E8E93] text-lg mt-1">Защищённый доступ</p>
             </div>
-
-            <div class="flex gap-3">
-                <button id="loginBtn" 
-                        class="flex-1 bg-blue-600 py-5 rounded-3xl text-lg font-medium">Войти</button>
-                <button id="registerBtn" 
-                        class="flex-1 bg-green-600 py-5 rounded-3xl text-lg font-medium">Регистрация</button>
+            
+            <!-- Face ID Icon Area -->
+            <div class="my-8 relative">
+                <div id="face-scan-area" 
+                     class="w-40 h-40 mx-auto rounded-[32px] border-[6px] border-[#3A3A3C] bg-[#1C1C1E] flex items-center justify-center relative overflow-hidden scan-animation">
+                    
+                    <!-- Face illustration -->
+                    <div class="relative z-20">
+                        <!-- Head -->
+                        <div class="w-20 h-20 rounded-full border-[3.5px] border-[#0A84FF]/70 flex items-center justify-center">
+                            <!-- Eyes -->
+                            <div class="flex gap-5 mt-[-6px]">
+                                <div class="w-[9px] h-[9px] bg-[#0A84FF] rounded-full"></div>
+                                <div class="w-[9px] h-[9px] bg-[#0A84FF] rounded-full"></div>
+                            </div>
+                            
+                            <!-- Mouth -->
+                            <div class="absolute bottom-[18px] left-1/2 -translate-x-1/2 w-6 h-[5px] border-b-[2.5px] border-[#0A84FF]/70 rounded-full"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Scanning line -->
+                    <div id="scan-line" class="scan-line hidden" style="top: 15%;"></div>
+                </div>
+            </div>
+            
+            <!-- Status text -->
+            <div class="text-center mb-10">
+                <h2 class="text-2xl font-semibold tracking-tight">Авторизация по Face ID</h2>
+                <p class="text-[#8E8E93] mt-2 max-w-[260px]">
+                    Используйте Face ID для безопасного входа в приложение
+                </p>
+            </div>
+            
+            <!-- Main Button -->
+            <button id="face-btn"
+                    onclick="handleFaceIDAuth()"
+                    class="face-id-button w-full max-w-[320px] py-4 px-8 rounded-2xl text-white font-semibold text-[17px] flex items-center justify-center gap-x-3 active:scale-[0.985]">
+                <i class="fa-solid fa-face-smile text-xl"></i>
+                <span id="btn-text">Войти по Face ID</span>
+            </button>
+            
+            <div class="mt-4 text-center">
+                <p class="native-prompt-hint">На iPhone в Safari появится системный запрос Face ID</p>
             </div>
         </div>
-
-        <!-- Главный экран -->
-        <div id="mainScreen" class="hidden">
-            <div class="flex justify-end items-center gap-3 mb-6">
-                <img id="userAvatar" src="" alt="Аватар" 
-                     class="w-10 h-10 rounded-full object-cover border-2 border-gray-600">
-                <div id="userNick" class="text-right"></div>
-            </div>
-
-            <div class="bg-gray-800 rounded-3xl p-6 mb-6">
-                <input id="searchUser" placeholder="Найти по никнейму..." 
-                       class="w-full p-4 rounded-3xl bg-gray-700 text-lg">
-                <button id="searchBtn" 
-                        class="w-full mt-4 bg-indigo-600 py-4 rounded-3xl font-medium">
-                    Найти и начать чат
-                </button>
-            </div>
-
-            <!-- Чат -->
-            <div id="chatScreen" class="hidden bg-gray-800 rounded-3xl p-6">
-                <div id="chatHeader" class="flex justify-between items-center mb-4 pb-4 border-b border-gray-700 font-semibold"></div>
+        
+        <div class="px-8 pb-8 text-center">
+            <p class="text-[11px] text-[#8E8E93]">Приложение работает только на iPhone • WebAuthn + Face ID</p>
+        </div>
+    </div>
+    
+    <!-- MAIN APP (hidden initially) -->
+    <div id="main-app" class="hidden min-h-screen flex flex-col safe-area ios-bg">
+        <!-- Top Navigation -->
+        <div class="sticky top-0 z-50 bg-black/90 backdrop-blur-xl border-b border-white/10">
+            <div class="px-5 pt-3 pb-2 flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-x-2">
+                        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0A84FF] to-[#007AFF] flex items-center justify-center">
+                            <i class="fa-solid fa-shield-halved text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <span class="font-semibold text-xl tracking-tight">SecureFace</span>
+                        </div>
+                    </div>
+                </div>
                 
-                <div id="chatMessages" class="h-80 overflow-y-auto mb-4 space-y-4"></div>
-                
-                <div class="flex gap-2">
-                    <input id="chatInput" placeholder="Напишите сообщение..." 
-                           class="flex-1 p-4 bg-gray-700 rounded-3xl">
-                    <button id="sendMsgBtn" 
-                            class="bg-blue-600 px-8 rounded-3xl font-medium">→</button>
+                <div class="flex items-center gap-x-2">
+                    <div class="px-3 py-1.5 bg-[#1C1C1E] rounded-2xl flex items-center gap-x-2 text-sm">
+                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span class="text-green-400 text-xs font-medium">Активен</span>
+                    </div>
+                    
+                    <button onclick="logout()" 
+                            class="px-4 py-2 text-sm font-medium text-[#0A84FF] active:opacity-70 transition-colors">
+                        Выйти
+                    </button>
                 </div>
             </div>
         </div>
+        
+        <div class="px-5 pt-6 pb-8 flex-1">
+            <!-- Welcome -->
+            <div class="mb-8">
+                <p class="text-[#8E8E93] text-sm">Добро пожаловать обратно</p>
+                <h1 class="text-3xl font-semibold tracking-tight mt-1">Иван Петров</h1>
+                <p class="text-[#8E8E93] mt-0.5">iPhone 16 Pro • Face ID активен</p>
+            </div>
+            
+            <!-- Status Card -->
+            <div class="ios-card p-5 mb-6 shadow-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-x-2">
+                            <i class="fa-solid fa-check-circle text-green-500 text-xl"></i>
+                            <span class="font-semibold">Face ID подтверждён</span>
+                        </div>
+                        <p class="text-xs text-[#8E8E93] mt-1">Последний вход: сегодня, 19:03</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="inline-flex items-center px-3 py-1 bg-green-500/10 text-green-400 rounded-2xl text-xs font-medium">
+                            <i class="fa-solid fa-lock mr-1.5"></i>
+                            <span>Защищено</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="mb-6">
+                <div class="section-header mb-3 px-1">Быстрые действия</div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div onclick="quickAction('notes')" 
+                         class="app-card ios-card p-4 active:bg-[#2C2C2E] cursor-pointer">
+                        <div class="flex items-center gap-x-3">
+                            <div class="w-11 h-11 rounded-2xl bg-[#0A84FF]/10 flex items-center justify-center">
+                                <i class="fa-solid fa-sticky-note text-[#0A84FF] text-xl"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold">Заметки</div>
+                                <div class="text-xs text-[#8E8E93]">12 записей</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div onclick="quickAction('photos')" 
+                         class="app-card ios-card p-4 active:bg-[#2C2C2E] cursor-pointer">
+                        <div class="flex items-center gap-x-3">
+                            <div class="w-11 h-11 rounded-2xl bg-purple-500/10 flex items-center justify-center">
+                                <i class="fa-solid fa-images text-purple-400 text-xl"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold">Фото</div>
+                                <div class="text-xs text-[#8E8E93]">847 снимков</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Activity -->
+            <div>
+                <div class="section-header mb-3 px-1 flex items-center justify-between">
+                    <span>Последняя активность</span>
+                    <span onclick="showActivity()" class="text-[#0A84FF] text-xs font-medium cursor-pointer">Все →</span>
+                </div>
+                
+                <div class="ios-card divide-y divide-white/10">
+                    <div class="px-4 py-3.5 flex items-center gap-x-3">
+                        <div class="w-9 h-9 rounded-xl bg-emerald-500/10 flex-shrink-0 flex items-center justify-center">
+                            <i class="fa-solid fa-sync text-emerald-400"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium text-sm">Синхронизация с iCloud</div>
+                            <div class="text-xs text-[#8E8E93]">2 минуты назад</div>
+                        </div>
+                    </div>
+                    
+                    <div class="px-4 py-3.5 flex items-center gap-x-3">
+                        <div class="w-9 h-9 rounded-xl bg-blue-500/10 flex-shrink-0 flex items-center justify-center">
+                            <i class="fa-solid fa-key text-blue-400"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium text-sm">Face ID использован</div>
+                            <div class="text-xs text-[#8E8E93]">Сегодня в 19:03</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom bar -->
+        <div class="px-5 pb-6">
+            <div onclick="resetDemo()" 
+                 class="text-center py-3 text-xs text-[#8E8E93] active:text-red-400 transition-colors cursor-pointer">
+                Сбросить демо (очистить Face ID)
+            </div>
+        </div>
     </div>
-
-    <script type="module" src="app.js"></script>
+    
+    <!-- Toast -->
+    <div id="toast" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 px-5 py-3 bg-[#1C1C1E] border border-white/10 rounded-3xl shadow-2xl ios-toast max-w-[280px]">
+        <div class="flex items-center gap-x-3 text-sm">
+            <i id="toast-icon" class="fa-solid fa-info-circle text-[#0A84FF]"></i>
+            <span id="toast-text" class="font-medium"></span>
+        </div>
+    </div>
+    
+    <script>
+        // Tailwind script
+        function initTailwind() {
+            document.documentElement.style.setProperty('--accent', '#0A84FF');
+        }
+        
+        // Helper: ArrayBuffer <-> Base64
+        function bufferToBase64(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+        
+        function base64ToBuffer(base64) {
+            const binary = window.atob(base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+        
+        // Check if real WebAuthn + platform authenticator is available
+        async function isWebAuthnSupported() {
+            if (!window.PublicKeyCredential) return false;
+            
+            try {
+                const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+                return available;
+            } catch (e) {
+                return false;
+            }
+        }
+        
+        // Register new passkey (first time)
+        async function registerPasskey() {
+            const challenge = crypto.getRandomValues(new Uint8Array(32));
+            const userId = crypto.getRandomValues(new Uint8Array(16));
+            
+            const createOptions = {
+                publicKey: {
+                    challenge: challenge,
+                    rp: {
+                        name: "SecureFace Demo",
+                        id: window.location.hostname || "localhost"
+                    },
+                    user: {
+                        id: userId,
+                        name: "demo@secureface.app",
+                        displayName: "Demo User"
+                    },
+                    pubKeyCredParams: [
+                        { type: "public-key", alg: -7 } // ES256
+                    ],
+                    authenticatorSelection: {
+                        authenticatorAttachment: "platform",
+                        userVerification: "required",
+                        residentKey: "required"
+                    },
+                    timeout: 60000
+                }
+            };
+            
+            try {
+                const credential = await navigator.credentials.create(createOptions);
+                if (credential) {
+                    const credIdB64 = bufferToBase64(credential.rawId);
+                    localStorage.setItem('demo_cred_id', credIdB64);
+                    return true;
+                }
+                return false;
+            } catch (err) {
+                console.warn("Registration error:", err);
+                return false;
+            }
+        }
+        
+        // Authenticate with existing passkey
+        async function authenticateWithPasskey() {
+            const storedCredId = localStorage.getItem('demo_cred_id');
+            if (!storedCredId) return false;
+            
+            const allowCredentials = [{
+                id: base64ToBuffer(storedCredId),
+                type: "public-key"
+            }];
+            
+            const challenge = crypto.getRandomValues(new Uint8Array(32));
+            
+            const requestOptions = {
+                publicKey: {
+                    challenge: challenge,
+                    rpId: window.location.hostname || "localhost",
+                    allowCredentials: allowCredentials,
+                    userVerification: "required",
+                    timeout: 60000
+                }
+            };
+            
+            try {
+                const assertion = await navigator.credentials.get(requestOptions);
+                return !!assertion;
+            } catch (err) {
+                console.warn("Authentication error:", err);
+                return false;
+            }
+        }
+        
+        // Beautiful simulation fallback
+        async function simulateFaceID() {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    if (!localStorage.getItem('demo_cred_id')) {
+                        localStorage.setItem('demo_cred_id', 'simulated-' + Date.now());
+                    }
+                    resolve(true);
+                }, 1650);
+            });
+        }
+        
+        // Main handler
+        let isProcessing = false;
+        
+        async function handleFaceIDAuth() {
+            if (isProcessing) return;
+            isProcessing = true;
+            
+            const btn = document.getElementById('face-btn');
+            const btnText = document.getElementById('btn-text');
+            const scanLine = document.getElementById('scan-line');
+            const scanArea = document.getElementById('face-scan-area');
+            
+            // UI: Start scanning state
+            btn.disabled = true;
+            btnText.textContent = "Сканирование лица...";
+            scanLine.classList.remove('hidden');
+            scanArea.style.borderColor = '#0A84FF';
+            scanArea.style.boxShadow = '0 0 0 8px rgba(10, 132, 255, 0.15)';
+            
+            let success = false;
+            
+            try {
+                const supported = await isWebAuthnSupported();
+                const hasStoredCred = !!localStorage.getItem('demo_cred_id');
+                
+                if (supported) {
+                    if (!hasStoredCred) {
+                        success = await registerPasskey();
+                    } else {
+                        success = await authenticateWithPasskey();
+                    }
+                } else {
+                    success = await simulateFaceID();
+                }
+            } catch (e) {
+                console.error(e);
+                success = false;
+            }
+            
+            // Reset visual state
+            scanLine.classList.add('hidden');
+            scanArea.style.borderColor = '#3A3A3C';
+            scanArea.style.boxShadow = 'none';
+            
+            if (success) {
+                btnText.textContent = "Успешно!";
+                btn.style.background = 'linear-gradient(145deg, #30D158, #34C759)';
+                
+                setTimeout(() => {
+                    unlockApp();
+                }, 420);
+            } else {
+                showToast("Не удалось подтвердить Face ID. Попробуйте ещё раз.", "error");
+                
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btnText.textContent = "Войти по Face ID";
+                    btn.style.background = 'linear-gradient(145deg, #0A84FF, #007AFF)';
+                    isProcessing = false;
+                }, 1200);
+            }
+        }
+        
+        function unlockApp() {
+            const lock = document.getElementById('lock-screen');
+            const app = document.getElementById('main-app');
+            
+            lock.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+            lock.style.opacity = '0';
+            lock.style.transform = 'translateY(-12px)';
+            
+            setTimeout(() => {
+                lock.style.display = 'none';
+                app.style.display = 'flex';
+                app.classList.add('main-content');
+                sessionStorage.setItem('faceid_authenticated', 'true');
+            }, 320);
+        }
+        
+        function logout() {
+            const app = document.getElementById('main-app');
+            const lock = document.getElementById('lock-screen');
+            
+            app.style.transition = 'opacity 0.25s ease';
+            app.style.opacity = '0';
+            
+            setTimeout(() => {
+                app.style.display = 'none';
+                app.style.opacity = '1';
+                lock.style.display = 'flex';
+                lock.style.opacity = '1';
+                lock.style.transform = 'none';
+                
+                const btn = document.getElementById('face-btn');
+                const btnText = document.getElementById('btn-text');
+                btn.disabled = false;
+                btnText.textContent = "Войти по Face ID";
+                btn.style.background = 'linear-gradient(145deg, #0A84FF, #007AFF)';
+                
+                isProcessing = false;
+            }, 220);
+        }
+        
+        function showToast(message, type = "info") {
+            const toast = document.getElementById('toast');
+            const text = document.getElementById('toast-text');
+            const icon = document.getElementById('toast-icon');
+            
+            text.textContent = message;
+            
+            if (type === "error") {
+                icon.className = "fa-solid fa-exclamation-circle text-red-400";
+            } else {
+                icon.className = "fa-solid fa-info-circle text-[#0A84FF]";
+            }
+            
+            toast.classList.remove('hidden');
+            toast.style.opacity = '1';
+            
+            setTimeout(() => {
+                toast.style.transition = 'all 0.3s ease';
+                toast.style.opacity = '0';
+                
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                    toast.style.transition = '';
+                    toast.style.opacity = '1';
+                }, 250);
+            }, 2600);
+        }
+        
+        function quickAction(type) {
+            if (type === 'notes') {
+                showToast("Открыты заметки (демо)");
+            } else if (type === 'photos') {
+                showToast("Галерея фото открыта (демо)");
+            }
+        }
+        
+        function showActivity() {
+            showToast("Полная история активности (демо-режим)");
+        }
+        
+        function resetDemo() {
+            if (confirm("Сбросить сохранённый Face ID и перезапустить демо?")) {
+                localStorage.removeItem('demo_cred_id');
+                sessionStorage.removeItem('faceid_authenticated');
+                location.reload();
+            }
+        }
+        
+        // Initialize everything
+        function initializeApp() {
+            initTailwind();
+            
+            if (sessionStorage.getItem('faceid_authenticated') === 'true') {
+                const lock = document.getElementById('lock-screen');
+                const app = document.getElementById('main-app');
+                lock.style.display = 'none';
+                app.style.display = 'flex';
+            }
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.key === "/" && document.getElementById('lock-screen').style.display !== 'none') {
+                    e.preventDefault();
+                    const btn = document.getElementById('face-btn');
+                    if (!btn.disabled) btn.click();
+                }
+            });
+            
+            const scanLine = document.getElementById('scan-line');
+            if (scanLine) scanLine.classList.add('hidden');
+            
+            const faceArea = document.getElementById('face-scan-area');
+            if (faceArea) {
+                let pressTimer;
+                faceArea.addEventListener('touchstart', () => {
+                    pressTimer = setTimeout(() => {
+                        if (!isProcessing) {
+                            simulateFaceID().then(() => {
+                                showToast("Симуляция Face ID выполнена");
+                            });
+                        }
+                    }, 850);
+                });
+                faceArea.addEventListener('touchend', () => clearTimeout(pressTimer));
+            }
+            
+            console.log('%c[SecureFace] Демо загружено. Откройте на iPhone для настоящего Face ID.', 'color:#666');
+        }
+        
+        window.onload = initializeApp;
+    </script>
 </body>
 </html>
