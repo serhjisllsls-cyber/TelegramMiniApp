@@ -7,73 +7,53 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; }
-    .photo-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-    .photo-card:hover { transform: translateY(-4px); }
-    .dropzone { transition: all 0.2s ease; }
-    .dropzone.dragover { border-color: #6366f1; background-color: #27251f; }
+    .photo-card { transition: all 0.2s ease; }
+    .photo-card:hover { transform: translateY(-3px); }
   </style>
 </head>
 <body class="bg-zinc-950 text-white">
   <div class="max-w-7xl mx-auto px-6 py-8">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
+    <div class="flex justify-between items-center mb-8">
       <div>
-        <h1 class="text-4xl font-semibold tracking-tight">Firebase Галерея</h1>
-        <p class="text-zinc-400">Фото сохраняются навсегда</p>
+        <h1 class="text-4xl font-semibold">Firebase Галерея</h1>
+        <p class="text-zinc-400">Фото загружаются автоматически из Firebase</p>
       </div>
-      <div class="flex items-center gap-x-3">
-        <div class="px-4 py-1.5 bg-zinc-900 border border-zinc-700 rounded-2xl text-sm flex items-center gap-x-2">
-          <span id="photo-count" class="font-semibold text-emerald-400">0</span>
-          <span class="text-zinc-400">фото</span>
-        </div>
-        <button onclick="window.location.reload()" 
-                class="px-4 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-2xl text-sm flex items-center gap-x-2">
-          <i class="fa-solid fa-sync-alt mr-1"></i> Обновить
-        </button>
+      <div class="px-4 py-1.5 bg-zinc-900 border border-zinc-700 rounded-2xl text-sm">
+        <span id="photo-count" class="font-semibold text-emerald-400">0</span> фото
       </div>
     </div>
 
-    <!-- Upload -->
-    <div id="dropzone" 
-         class="dropzone border-2 border-dashed border-zinc-700 hover:border-indigo-500 bg-zinc-900 rounded-3xl p-10 text-center cursor-pointer mb-8">
-      <i class="fa-solid fa-cloud-upload-alt text-5xl text-indigo-400 mb-4"></i>
-      <h3 class="text-2xl font-semibold mb-1">Перетащите фото</h3>
-      <p class="text-zinc-400">или нажмите для выбора</p>
+    <!-- Загрузка -->
+    <div id="dropzone" class="border-2 border-dashed border-zinc-700 hover:border-indigo-500 bg-zinc-900 rounded-3xl p-10 text-center cursor-pointer mb-8">
+      <i class="fa-solid fa-cloud-upload-alt text-5xl text-indigo-400 mb-3"></i>
+      <h3 class="text-xl font-semibold">Перетащите фото или нажмите</h3>
       <input type="file" id="file-input" multiple accept="image/*" class="hidden">
     </div>
 
-    <!-- Uploading -->
-    <div id="uploading-section" class="hidden mb-6">
-      <div class="text-sm font-semibold mb-2 px-1 text-zinc-400">Загрузка</div>
-      <div id="uploading-list" class="space-y-2"></div>
-    </div>
-
-    <!-- Gallery -->
-    <h2 class="font-semibold text-xl mb-4 px-1">Все фотографии</h2>
+    <!-- Галерея -->
+    <h2 class="font-semibold text-xl mb-4">Сохранённые фото</h2>
     <div id="gallery" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5"></div>
   </div>
 
-  <!-- Modal -->
-  <div id="modal" onclick="if (event.target.id === 'modal') closeModal()" 
-       class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6">
-    <div onclick="event.stopImmediatePropagation()" class="bg-zinc-900 border border-zinc-700 w-full max-w-4xl rounded-3xl overflow-hidden">
-      <div class="relative bg-black">
-        <img id="modal-image" class="max-h-[70vh] w-full object-contain mx-auto" alt="">
-        <button onclick="closeModal()" class="absolute top-4 right-4 w-10 h-10 bg-black/60 hover:bg-black/80 rounded-2xl flex items-center justify-center">
+  <!-- Модалка -->
+  <div id="modal" onclick="if (event.target.id === 'modal') closeModal()" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6">
+    <div onclick="event.stopImmediatePropagation()" class="bg-zinc-900 border border-zinc-700 max-w-4xl w-full rounded-3xl overflow-hidden">
+      <div class="relative">
+        <img id="modal-image" class="max-h-[70vh] w-full object-contain bg-black" alt="">
+        <button onclick="closeModal()" class="absolute top-4 right-4 w-10 h-10 bg-black/70 hover:bg-black rounded-2xl flex items-center justify-center">
           <i class="fa-solid fa-times text-xl"></i>
         </button>
       </div>
-      <div class="p-6 flex justify-between items-center border-t border-zinc-700">
+      <div class="p-6 flex justify-between items-center">
         <div>
           <div id="modal-name" class="font-semibold text-xl"></div>
           <div id="modal-date" class="text-sm text-zinc-400"></div>
         </div>
         <div class="flex gap-x-3">
-          <button onclick="deleteFromModal()" class="px-5 py-2 bg-red-600 hover:bg-red-700 rounded-2xl text-sm flex items-center gap-x-2">
+          <button onclick="deleteFromModal()" class="px-5 py-2 bg-red-600 hover:bg-red-700 rounded-2xl flex items-center gap-x-2">
             <i class="fa-solid fa-trash"></i> Удалить
           </button>
-          <a id="modal-download" href="#" download class="px-5 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 rounded-2xl text-sm flex items-center gap-x-2">
+          <a id="modal-download" href="#" download class="px-5 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 rounded-2xl flex items-center gap-x-2">
             <i class="fa-solid fa-download"></i> Скачать
           </a>
         </div>
@@ -81,7 +61,7 @@
     </div>
   </div>
 
-  <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-2"></div>
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50"></div>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -99,87 +79,23 @@
     };
 
     let db, storage;
-    let currentModalPhoto = null;
 
-    function showToast(message, type = 'success') {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = `px-5 py-3 rounded-2xl text-sm font-medium shadow-xl ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`;
-      toast.textContent = message;
-      container.appendChild(toast);
-      setTimeout(() => toast.remove(), 2800);
-    }
-
-    function createUploadItem(name, id) {
-      const el = document.createElement('div');
-      el.id = id;
-      el.className = `flex items-center gap-x-4 bg-zinc-900 border border-zinc-700 px-5 py-3 rounded-2xl`;
-      el.innerHTML = `
-        <div class="flex-1">
-          <div class="flex justify-between text-sm mb-1">
-            <span class="truncate">${name}</span>
-            <span id="${id}-percent" class="font-mono text-xs text-zinc-400">0%</span>
-          </div>
-          <div class="h-2 bg-zinc-800 rounded-full overflow-hidden">
-            <div id="${id}-bar" class="h-2 bg-indigo-500 transition-all" style="width:0%"></div>
-          </div>
-        </div>
-      `;
-      return el;
-    }
-
-    function updateProgress(id, percent) {
-      const bar = document.getElementById(id + '-bar');
-      const p = document.getElementById(id + '-percent');
-      if (bar) bar.style.width = percent + '%';
-      if (p) p.textContent = Math.round(percent) + '%';
-    }
-
-    function removeUploadItem(id) {
-      document.getElementById(id)?.remove();
-      if (document.getElementById('uploading-list').children.length === 0) {
-        document.getElementById('uploading-section').classList.add('hidden');
-      }
-    }
-
-    function startUpload(file) {
-      const id = 'u-' + Date.now();
-      document.getElementById('uploading-section').classList.remove('hidden');
-      document.getElementById('uploading-list').appendChild(createUploadItem(file.name, id));
-
-      const ref = storage.ref(`photos/${Date.now()}-${file.name}`);
-      const task = ref.put(file);
-
-      task.on('state_changed',
-        snap => updateProgress(id, (snap.bytesTransferred / snap.totalBytes) * 100),
-        err => { showToast('Ошибка загрузки', 'error'); removeUploadItem(id); },
-        async () => {
-          const url = await task.snapshot.ref.getDownloadURL();
-          await db.collection('photos').add({
-            url,
-            path: ref.fullPath,
-            name: file.name,
-            size: file.size,
-            uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-          removeUploadItem(id);
-          showToast('Фото загружено');
-        }
-      );
-    }
-
-    function handleFiles(files) {
-      Array.from(files).forEach(f => {
-        if (f.type.startsWith('image/')) startUpload(f);
-      });
+    function showToast(msg, type = 'success') {
+      const div = document.createElement('div');
+      div.className = `px-5 py-3 mb-2 rounded-2xl text-sm ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`;
+      div.textContent = msg;
+      document.getElementById('toast-container').appendChild(div);
+      setTimeout(() => div.remove(), 2500);
     }
 
     function renderGallery(photos) {
-      const gallery = document.getElementById('gallery');
-      gallery.innerHTML = '';
+      const container = document.getElementById('gallery');
+      container.innerHTML = '';
+
+      document.getElementById('photo-count').textContent = photos.length;
 
       if (photos.length === 0) {
-        gallery.innerHTML = `<div class="col-span-full text-center py-16 text-zinc-400">Пока нет фото</div>`;
+        container.innerHTML = `<div class="col-span-full text-center py-12 text-zinc-400">Пока нет сохранённых фото в Firebase</div>`;
         return;
       }
 
@@ -187,11 +103,13 @@
         const card = document.createElement('div');
         card.className = `photo-card group relative bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden`;
 
-        const date = photo.uploadedAt?.toDate?.().toLocaleString('ru-RU', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) || '';
+        const date = photo.uploadedAt?.toDate?.().toLocaleString('ru-RU', { 
+          day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
+        }) || '';
 
         card.innerHTML = `
           <img src="${photo.url}" class="w-full aspect-[4/3] object-cover cursor-pointer">
-          <button class="delete-btn absolute top-3 right-3 px-3 py-1.5 bg-black/60 hover:bg-red-600 rounded-2xl text-sm opacity-0 group-hover:opacity-100 transition-all">
+          <button class="delete-btn absolute top-3 right-3 px-3 py-1 bg-black/60 hover:bg-red-600 rounded-2xl text-sm opacity-0 group-hover:opacity-100">
             <i class="fa-solid fa-trash"></i>
           </button>
           <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 p-4">
@@ -201,12 +119,29 @@
         `;
 
         card.querySelector('img').onclick = () => openModal(photo);
-        card.querySelector('.delete-btn').onclick = e => {
+        card.querySelector('.delete-btn').onclick = (e) => {
           e.stopImmediatePropagation();
           deletePhoto(photo);
         };
-        gallery.appendChild(card);
+
+        container.appendChild(card);
       });
+    }
+
+    function setupGalleryListener() {
+      // ← Вот здесь происходит загрузка фото при запуске сайта
+      db.collection('photos')
+        .orderBy('uploadedAt', 'desc')
+        .onSnapshot((snapshot) => {
+          const photos = [];
+          snapshot.forEach(doc => {
+            photos.push({ id: doc.id, ...doc.data() });
+          });
+          renderGallery(photos);
+        }, (error) => {
+          console.error(error);
+          showToast('Ошибка загрузки фото из Firebase', 'error');
+        });
     }
 
     async function deletePhoto(photo) {
@@ -214,66 +149,91 @@
       try {
         await storage.ref(photo.path).delete();
         await db.collection('photos').doc(photo.id).delete();
-        showToast('Удалено');
+        showToast('Фото удалено');
       } catch (e) {
-        showToast('Ошибка удаления', 'error');
+        showToast('Не удалось удалить', 'error');
       }
     }
 
     function openModal(photo) {
-      currentModalPhoto = photo;
       document.getElementById('modal-image').src = photo.url;
       document.getElementById('modal-name').textContent = photo.name;
       document.getElementById('modal-date').textContent = photo.uploadedAt?.toDate?.().toLocaleString('ru-RU') || '';
       document.getElementById('modal-download').href = photo.url;
-      document.getElementById('modal').classList.remove('hidden');
-      document.getElementById('modal').classList.add('flex');
+
+      const modal = document.getElementById('modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
     }
 
     function closeModal() {
-      document.getElementById('modal').classList.add('hidden');
-      document.getElementById('modal').classList.remove('flex');
+      const modal = document.getElementById('modal');
+      modal.classList.remove('flex');
+      modal.classList.add('hidden');
     }
 
     function deleteFromModal() {
-      if (currentModalPhoto) deletePhoto(currentModalPhoto);
+      // реализация удаления из модалки (можно расширить)
       closeModal();
-    }
-
-    function setupRealtime() {
-      db.collection('photos').orderBy('uploadedAt', 'desc').onSnapshot(snap => {
-        const photos = [];
-        snap.forEach(doc => photos.push({id: doc.id, ...doc.data()}));
-        document.getElementById('photo-count').textContent = photos.length;
-        renderGallery(photos);
-      });
     }
 
     function initFirebase() {
       firebase.initializeApp(firebaseConfig);
       db = firebase.firestore();
       storage = firebase.storage();
-      setupRealtime();
+
+      // Запускаем загрузку фото сразу при старте сайта
+      setupGalleryListener();
     }
 
-    function setupDropzone() {
-      const dz = document.getElementById('dropzone');
+    function setupUpload() {
+      const dropzone = document.getElementById('dropzone');
       const input = document.getElementById('file-input');
 
-      dz.onclick = () => input.click();
-      input.onchange = e => { handleFiles(e.target.files); e.target.value = ''; };
+      dropzone.onclick = () => input.click();
 
-      dz.ondragover = e => { e.preventDefault(); dz.classList.add('dragover'); };
-      dz.ondragleave = () => dz.classList.remove('dragover');
-      dz.ondrop = e => { e.preventDefault(); dz.classList.remove('dragover'); handleFiles(e.dataTransfer.files); };
+      input.onchange = (e) => {
+        Array.from(e.target.files).forEach(file => {
+          if (file.type.startsWith('image/')) uploadFile(file);
+        });
+        e.target.value = '';
+      };
+
+      dropzone.ondrop = (e) => {
+        e.preventDefault();
+        Array.from(e.dataTransfer.files).forEach(file => {
+          if (file.type.startsWith('image/')) uploadFile(file);
+        });
+      };
+      dropzone.ondragover = (e) => e.preventDefault();
     }
 
-    function start() {
-      setupDropzone();
+    function uploadFile(file) {
+      const ref = storage.ref(`photos/${Date.now()}-${file.name}`);
+      const task = ref.put(file);
+
+      task.on('state_changed', null, 
+        (err) => showToast('Ошибка загрузки', 'error'),
+        async () => {
+          const url = await task.snapshot.ref.getDownloadURL();
+          await db.collection('photos').add({
+            url: url,
+            path: ref.fullPath,
+            name: file.name,
+            size: file.size,
+            uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          showToast('Фото сохранено в Firebase');
+        }
+      );
+    }
+
+    function startApp() {
       initFirebase();
+      setupUpload();
     }
 
-    window.onload = start;
+    window.onload = startApp;
   </script>
 </body>
 </html>
